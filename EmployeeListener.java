@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -95,16 +96,20 @@ class EmployeeListener implements ActionListener {
     // Reservation Insertion
     private void insertReservation() {
         try (PreparedStatement pstmt = emp.connection.prepareStatement(
-                "INSERT INTO Reservation VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                "INSERT INTO Reservation VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             pstmt.setString(1, emp.reservationIdField.getText());
-            pstmt.setString(2, emp.customerIdField.getText());
-            pstmt.setString(3, emp.carIdField.getText());
-            pstmt.setString(4, emp.startDateField.getText());
-            pstmt.setString(5, emp.endDateField.getText());
-            pstmt.setString(6, emp.statusCombo.getSelectedItem().toString());
-            pstmt.setString(7, emp.resPaymentIdField.getText());
-            pstmt.setString(8, emp.insuranceIdField.getText());
-            pstmt.setString(9, emp.collateralIdField.getText());
+            pstmt.setString(2, emp.resCarIdField.getText());
+            pstmt.setString(3, emp.resCustomerIdField.getText());
+            pstmt.setString(4, emp.resEmpIdField.getText());
+            pstmt.setString(5, emp.statusCombo.getSelectedItem().toString());
+            pstmt.setString(6, null);
+            pstmt.setString(7, emp.startDateField.getText());
+            pstmt.setString(8, emp.endDateField.getText());
+            pstmt.setString(9, emp.pickUpLocation.getText());
+            pstmt.setString(10, emp.dropOffLocation.getText());
+            pstmt.setString(11, null);
+            pstmt.setString(12, emp.resInsuranceIdField.getText());
+
             pstmt.executeUpdate();
             emp.loadTableData("SELECT * FROM Reservation", emp.modelRes);
             emp.clearFields(emp.inputResPanel);
@@ -114,20 +119,32 @@ class EmployeeListener implements ActionListener {
         }
     }
 
-
     // Payment Insertion
     private void insertPayment() {
         try (PreparedStatement pstmt = emp.connection.prepareStatement(
-                "INSERT INTO Payment VALUES (?, ?, ?, ?, ?)")) {
+                "INSERT INTO Payment VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+
             pstmt.setString(1, emp.paymentIdField.getText());
-            pstmt.setString(2, emp.reservationIdField.getText());
+            pstmt.setString(2, emp.payReservationIdField.getText()); // Link to Reservation
             pstmt.setString(3, emp.amountField.getText());
-            pstmt.setString(4, emp.methodCombo.getSelectedItem().toString());
-            pstmt.setString(5, emp.paymentDateField.getText());
+            pstmt.setString(4, emp.noCarField.getText());
+            pstmt.setString(5, emp.payTypeCombo.getSelectedItem().toString());
+            pstmt.setString(6, emp.totalPriceField.getText());
+            pstmt.setString(7, emp.methodCombo.getSelectedItem().toString());
+            pstmt.setString(8, emp.paymentDateField.getText());
             pstmt.executeUpdate();
+
+            // Call the stored procedure to update Reservation with Payment_Id
+            try (CallableStatement stmt = emp.connection.prepareCall("{CALL Update_Payment}")) {
+                stmt.execute();
+            }
+
+            // Refresh table and clear fields
             emp.loadTableData("SELECT * FROM Payment", emp.modelPay);
+            emp.loadTableData("SELECT * FROM Reservation", emp.modelRes);
             emp.clearFields(emp.inputPayPanel);
             JOptionPane.showMessageDialog(null, "Payment added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException ex) {
             emp.showError("Payment Add Error", ex);
         }
@@ -137,16 +154,28 @@ class EmployeeListener implements ActionListener {
     // Collateral Insertion
     private void insertCollateral() {
         try (PreparedStatement pstmt = emp.connection.prepareStatement(
-                "INSERT INTO Collateral VALUES (?, ?, ?, ?, ?)")) {
+                "INSERT INTO Collateral VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+
             pstmt.setString(1, emp.collateralIdField.getText());
-            pstmt.setString(2, emp.reservationIdField.getText());
-            pstmt.setString(3, emp.collTypeField.getText());
-            pstmt.setString(4, emp.valueField.getText());
-            pstmt.setString(5, emp.descriptionField.getText());
+            pstmt.setString(2, emp.collCustomerIdField.getText());
+            pstmt.setString(3, emp.collCarIdField.getText());
+            pstmt.setString(4, emp.collReservationIdField.getText());
+            pstmt.setString(5, emp.collTypeField.getText());
+            pstmt.setString(6, emp.collamountField.getText());
+            pstmt.setString(7, emp.reciveDateField.getText());
             pstmt.executeUpdate();
+
+            // Call the stored procedure to update Reservation with Collateral_Id
+            try (CallableStatement stmt = emp.connection.prepareCall("{CALL Update_Collateral}")) {
+                stmt.execute();
+            }
+
+            // Refresh table and clear fields
             emp.loadTableData("SELECT * FROM Collateral", emp.modelColl);
+            emp.loadTableData("SELECT * FROM Reservation", emp.modelRes);
             emp.clearFields(emp.inputCollPanel);
             JOptionPane.showMessageDialog(null, "Collateral added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException ex) {
             emp.showError("Collateral Add Error", ex);
         }
