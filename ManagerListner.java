@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -88,16 +89,20 @@ public class ManagerListner implements ActionListener {
     // Reservation Insertion
     private void insertReservation() {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
-                "INSERT INTO Reservation VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                "INSERT INTO Reservation VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             pstmt.setString(1, admin.reservationIdField.getText());
-            pstmt.setString(2, admin.customerIdField.getText());
-            pstmt.setString(3, admin.carIdField.getText());
-            pstmt.setString(4, admin.startDateField.getText());
-            pstmt.setString(5, admin.endDateField.getText());
-            pstmt.setString(6, admin.statusCombo.getSelectedItem().toString());
-            pstmt.setString(7, admin.resPaymentIdField.getText());
-            pstmt.setString(8, admin.insuranceIdField.getText());
-            pstmt.setString(9, admin.collateralIdField.getText());
+            pstmt.setString(2, admin.resCarIdField.getText());
+            pstmt.setString(3, admin.resCustomerIdField.getText());
+            pstmt.setString(4, admin.resEmpIdField.getText());
+            pstmt.setString(5, admin.statusCombo.getSelectedItem().toString());
+            pstmt.setString(6, null);
+            pstmt.setString(7, admin.startDateField.getText());
+            pstmt.setString(8, admin.endDateField.getText());
+            pstmt.setString(9, admin.pickUpLocation.getText());
+            pstmt.setString(10, admin.dropOffLocation.getText());
+            pstmt.setString(11, null);
+            pstmt.setString(12, admin.resInsuranceIdField.getText());
+
             pstmt.executeUpdate();
             admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
             admin.clearFields(admin.inputResPanel);
@@ -111,40 +116,65 @@ public class ManagerListner implements ActionListener {
     // Payment Insertion
     private void insertPayment() {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
-                "INSERT INTO Payment VALUES (?, ?, ?, ?, ?)")) {
+                "INSERT INTO Payment VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+
             pstmt.setString(1, admin.paymentIdField.getText());
-            pstmt.setString(2, admin.reservationIdField.getText());
+            pstmt.setString(2, admin.payReservationIdField.getText()); // Link to Reservation
             pstmt.setString(3, admin.amountField.getText());
-            pstmt.setString(4, admin.methodCombo.getSelectedItem().toString());
-            pstmt.setString(5, admin.paymentDateField.getText());
+            pstmt.setString(4, admin.noCarField.getText());
+            pstmt.setString(5, admin.payTypeCombo.getSelectedItem().toString());
+            pstmt.setString(6, admin.totalPriceField.getText());
+            pstmt.setString(7, admin.methodCombo.getSelectedItem().toString());
+            pstmt.setString(8, admin.paymentDateField.getText());
             pstmt.executeUpdate();
+
+            // Call the stored procedure to update Reservation with Payment_Id
+            try (CallableStatement stmt = admin.connection.prepareCall("{CALL Update_Payment}")) {
+                stmt.execute();
+            }
+
+            // Refresh table and clear fields
             admin.loadTableData("SELECT * FROM Payment", admin.modelPay);
+            admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
             admin.clearFields(admin.inputPayPanel);
             JOptionPane.showMessageDialog(null, "Payment added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException ex) {
             admin.showError("Payment Add Error", ex);
         }
     }
 
 
-
     // Collateral Insertion
     private void insertCollateral() {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
-                "INSERT INTO Collateral VALUES (?, ?, ?, ?, ?)")) {
+                "INSERT INTO Collateral VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+
             pstmt.setString(1, admin.collateralIdField.getText());
-            pstmt.setString(2, admin.reservationIdField.getText());
-            pstmt.setString(3, admin.collTypeField.getText());
-            pstmt.setString(4, admin.valueField.getText());
-            pstmt.setString(5, admin.descriptionField.getText());
+            pstmt.setString(2, admin.collCustomerIdField.getText());
+            pstmt.setString(3, admin.collCarIdField.getText());
+            pstmt.setString(4, admin.collReservationIdField.getText());
+            pstmt.setString(5, admin.collTypeField.getText());
+            pstmt.setString(6, admin.collamountField.getText());
+            pstmt.setString(7, admin.reciveDateField.getText());
             pstmt.executeUpdate();
+
+            // Call the stored procedure to update Reservation with Collateral_Id
+            try (CallableStatement stmt = admin.connection.prepareCall("{CALL Update_Collateral}")) {
+                stmt.execute();
+            }
+
+            // Refresh table and clear fields
             admin.loadTableData("SELECT * FROM Collateral", admin.modelColl);
+            admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
             admin.clearFields(admin.inputCollPanel);
             JOptionPane.showMessageDialog(null, "Collateral added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException ex) {
             admin.showError("Collateral Add Error", ex);
         }
     }
+    
     private void insertCarHis() {
         System.out.println("I am in the insertCarHis Statement");
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
