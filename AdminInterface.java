@@ -15,9 +15,7 @@ public class AdminInterface  extends CarRentalSystem {
             empEmailField,empMNameField, empRegionField, empWoredaField, empHouseNoField,
             payReservationIdField, amountField, paymentDateField;
     JComboBox<String>  empRole;
-    //JComboBox <Integer> statusCombo;
     JButton addBtnCar,addBtnEmp,addBtnIns,addBtnBranch;
-    //    DefaultTableModel modelBranch,modelEmp;
     JButton updateCusBtn,updateCarBtn,updateResBtn,updateEmpBtn,updatePayBtn,
             updateInsBtn,updateColBtn,updateBraBtn,updateHisBtn, deleteCusbtn,deleteCarBtn,deleteResBtn,deleteEmpBtn,
             deletePayBtn, deleteInsBtn,deleteColBtn,deleteBraBtn,deleteHisBtn;
@@ -29,9 +27,9 @@ public class AdminInterface  extends CarRentalSystem {
 
 
     AdminInterface() {
-//        logIn();
         super("Hello World");
         initializeDatabase();
+        setIcon();
         setTitle("Flash Car Rental - Administrator");
         setSize(1200, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -40,9 +38,6 @@ public class AdminInterface  extends CarRentalSystem {
         listner = new AdminListner(this);
 
         Create_AdminUI();
-
-
-        // Add tabs for different entities
 
         add(tabbedPane);
         setVisible(true);
@@ -59,7 +54,7 @@ public class AdminInterface  extends CarRentalSystem {
         tabbedPane.addTab("Rental Branch",createAdminRentalBranchPanel());
         tabbedPane.addTab("Car History", createAdminCarHistoryPanel());
         tabbedPane.addTab("Report", createAdminReportPanel(connection));
-        tabbedPane.addTab("Search", createSearchPanel(connection));
+        tabbedPane.addTab("Search", createAdminSearchPanel(connection));
 
     }
 
@@ -67,7 +62,6 @@ public class AdminInterface  extends CarRentalSystem {
     private JPanel createAdminCustomerPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         inputCustPanel = new JPanel(new GridLayout(0, 2));
-        //updateBtn = new JButton("Update");
 
         customerIdField = new JTextField();
         fNameField = new JTextField();
@@ -98,14 +92,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputCustPanel.add(new JLabel("Driver License:"));
         inputCustPanel.add(licenseField);
 
-        //Customer Table Model And Actual Table of Customer
-        modelCust =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelCust =  new DefaultTableModel();
         cusTable = new JTable(modelCust);
+        cusTable.setEnabled(false);
 
 
         cusTable.setName("Customer");
@@ -140,8 +129,6 @@ public class AdminInterface  extends CarRentalSystem {
         JPanel panel = new JPanel(new BorderLayout());
         inputCarPanel = new JPanel(new GridLayout(0, 2));
 
-//        inputCarPanel.setBorder();
-
         carIdField = new JTextField();
         carBranchIdField = new JTextField();
         modelField = new JTextField();
@@ -159,13 +146,10 @@ public class AdminInterface  extends CarRentalSystem {
         inputCarPanel.add(new JLabel("Available:"));
         inputCarPanel.add(availableCombo);
 
-        modelCar =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelCar =  new DefaultTableModel();
         caTable = new JTable(modelCar);
+        caTable.setEnabled(false);
+
         caTable.setName("Car");
 
         loadTableData("SELECT * FROM Car", Car_Table(modelCar));
@@ -233,13 +217,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputResPanel.add(new JLabel("Collateral ID:"));
         inputResPanel.add(resCollateralIdField);
 
-        modelRes =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelRes =  new DefaultTableModel();
         resTable = new JTable(modelRes);
+        resTable.setEnabled(false);
         resTable.setName("Reservation");
 
         loadTableData("SELECT * FROM Reservation", Reservation_Table(modelRes));
@@ -295,13 +275,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputPayPanel.add(new JLabel("Payment Date (YYYY-MM-DD):"));
         inputPayPanel.add(paymentDateField);
 
-        modelPay =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelPay =  new DefaultTableModel();
         payTable = new JTable(modelPay);
+        payTable.setEnabled(false);
         payTable.setName("Payment");
 
         loadTableData("SELECT * FROM Payment", Payment_Table(modelPay));
@@ -366,13 +342,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputEmpPanel.add(new JLabel("Phone:"));
         inputEmpPanel.add(empPhoneField);
 
-        modelEmp =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelEmp =  new DefaultTableModel();
         empTable = new JTable(modelEmp);
+        empTable.setEnabled(false);
         empTable.setName("Employee");
 
 
@@ -420,13 +392,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputInsPanel.add(new JLabel("Expire Date (YYYY-MM-DD):"));
         inputInsPanel.add(expireDateField);
 
-        modelIns =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelIns =  new DefaultTableModel();
         insTable = new JTable(modelIns);
+        insTable.setEnabled(false);
         insTable.setName("Insurance");
 
         loadTableData("SELECT * FROM Insurance", Insurance_Table(modelIns));
@@ -479,13 +447,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputCollPanel.add(new JLabel("Recive Date (YYYY-MM-DD):"));
         inputCollPanel.add(reciveDateField);
 
-        modelColl =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelColl =  new DefaultTableModel();
         colTable = new JTable(modelColl);
+        colTable.setEnabled(false);
         colTable.setName("Collateral");
 
         loadTableData("SELECT * FROM Collateral", Collateral_Table(modelColl));
@@ -528,13 +492,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputBranchPanel.add(new JLabel("Woreda:"));
         inputBranchPanel.add(bWoredaField);
 
-        modelBranch =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelBranch =  new DefaultTableModel();
         braTable = new JTable(modelBranch);
+        braTable.setEnabled(false);
         braTable.setName("Rental Branch");
 
         loadTableData("SELECT * FROM Rental_Branch", Rental_Branch(modelBranch));
@@ -580,13 +540,9 @@ public class AdminInterface  extends CarRentalSystem {
         inputHistoryPanel.add(new JLabel("Record Type (Service/Damage/Maintenance/Other):"));
         inputHistoryPanel.add(recordTypeField);
 
-        modelCarHistory =  new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelCarHistory =  new DefaultTableModel();
         hisTable = new JTable(modelCarHistory);
+        hisTable.setEnabled(false);
         hisTable.setName("Car History");
 
         loadTableData("SELECT * FROM Car_History", Car_History(modelCarHistory));
@@ -717,9 +673,7 @@ public class AdminInterface  extends CarRentalSystem {
     }
 
 
-    //Search-Panel
-
-    //Search-Panel
+    //Report-Panel
     public JPanel createAdminReportPanel(Connection dbConnection) {
         JPanel resultPanel = new JPanel(new BorderLayout());
 
@@ -739,6 +693,7 @@ public class AdminInterface  extends CarRentalSystem {
 
         // Create the search button
         JButton searchButton = new JButton("Search");
+        searchButton.setFocusable(false);
         searchButton.addActionListener(new reportButtonListner(dbConnection, searchComboBox, resultPanel));
 
         // Create the result table
@@ -750,10 +705,13 @@ public class AdminInterface  extends CarRentalSystem {
 
         // Create the clear button
         JButton clearButton = new JButton("Clear");
-        clearButton.addActionListener(e -> {
-            tableModel.setRowCount(0); // Clear the table data
-            tableModel.setColumnCount(0); // Clear the table columns
-            scrollPane.setVisible(true); // Ensure the scroll pane is visible
+        clearButton.setFocusable(false);
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tableModel.setRowCount(0); // Clear the table data
+                tableModel.setColumnCount(0); // Clear the table columns
+            }
         });
 
         // Create the top panel with the combo box and search button
@@ -773,140 +731,6 @@ public class AdminInterface  extends CarRentalSystem {
         return resultPanel; // Return the correct panel
     }
 
-    public static JPanel createSearchPanel(Connection dbConnection) {
-        JPanel resultPanel = new JPanel(new BorderLayout());
-
-        // Create the combo box with search options
-        String[] searchOptions = {"Customer by ID", "Employee by Name", "Employee by ID", "Car by ID", "Reservation by ID", "Car History by Car ID"};
-        JComboBox<String> searchComboBox = new JComboBox<>(searchOptions);
-        searchComboBox.setSelectedIndex(0); // Set "Customer by ID" as the default selection
-
-        // Create the search button
-        JButton searchButton = new JButton("Search");
-        searchButton.addActionListener(new DemoTrail.AdminInterface.SearchButtonListener(dbConnection, searchComboBox, resultPanel));
-
-        // Create the result table
-        DefaultTableModel tableModel = new DefaultTableModel();
-        JTable resultTable = new JTable(tableModel);
-        resultTable.setEnabled(false); // Make the table non-editable
-
-        JScrollPane scrollPane = new JScrollPane(resultTable);
-
-
-        JButton clearButton = new JButton("Clear");
-
-        clearButton.addActionListener(e -> {
-            scrollPane.setVisible(false);
-        });
-
-        JPanel topPanel = new JPanel();
-        topPanel.add(searchComboBox);
-        topPanel.add(searchButton);
-
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.add(clearButton);
-
-        resultPanel.add(topPanel, BorderLayout.NORTH);
-        resultPanel.add(scrollPane, BorderLayout.CENTER);
-        resultPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        return resultPanel;
-    }
-
-    private static class SearchButtonListener implements ActionListener {
-        private final Connection connection;
-        private final JComboBox<String> searchComboBox;
-        private final JPanel resultPanel;
-
-        public SearchButtonListener(Connection connection, JComboBox<String> searchComboBox, JPanel resultPanel) {
-            this.connection = connection;
-            this.searchComboBox = searchComboBox;
-            this.resultPanel = resultPanel;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String selectedOption = (String) searchComboBox.getSelectedItem();
-            if (selectedOption == null) {
-                JOptionPane.showMessageDialog(resultPanel, "Please select a search option.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String exampleValue = "";
-            switch (selectedOption) {
-                case "Customer by ID":
-                    exampleValue = "cid01";
-                    break;
-                case "Employee by Name":
-                    exampleValue = "John";
-                    break;
-                case "Employee by ID":
-                    exampleValue = "emp01";
-                    break;
-                case "Car by ID":
-                    exampleValue = "caid02";
-                    break;
-                case "Reservation by ID":
-                    exampleValue = "rid01";
-                    break;
-                case "Car History by Car ID":
-                    exampleValue = "caid02";
-                    break;
-            }
-
-            String input = JOptionPane.showInputDialog(resultPanel, "Enter search value:\nExample: " + exampleValue);
-            if (input == null || input.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(resultPanel, "Please enter a search value.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            try {
-                ResultSet resultSet = null;
-                switch (selectedOption) {
-                    case "Customer by ID":
-                        resultSet = connection.prepareStatement("SELECT * FROM Customer_Info('" + input + "')").executeQuery();
-                        break;
-                    case "Employee by Name":
-                        resultSet = connection.prepareStatement("SELECT * FROM Search_EmployeeByName('" + input + "')").executeQuery();
-                        break;
-                    case "Employee by ID":
-                        resultSet = connection.prepareStatement("SELECT * FROM Search_EmployeeById('" + input + "')").executeQuery();
-                        break;
-                    case "Car by ID":
-                        resultSet = connection.prepareStatement("SELECT * FROM Car_Info('" + input + "')").executeQuery();
-                        break;
-                    case "Reservation by ID":
-                        resultSet = connection.prepareStatement("SELECT * FROM Search_ReservationById('" + input + "')").executeQuery();
-                        break;
-                    case "Car History by Car ID":
-                        resultSet = connection.prepareStatement("SELECT * FROM Search_CarHistoryById('" + input + "')").executeQuery();
-                        break;
-                }
-
-                if (resultSet != null) {
-                    DefaultTableModel tableModel = (DefaultTableModel) ((JTable) ((JScrollPane) resultPanel.getComponent(1)).getViewport().getView()).getModel();
-                    tableModel.setRowCount(0); // Clear the table
-                    java.sql.ResultSetMetaData metaData = resultSet.getMetaData();
-                    int columnCount = metaData.getColumnCount();
-
-                    tableModel.setColumnCount(0);
-                    for (int i = 1; i <= columnCount; i++) {
-                        tableModel.addColumn(metaData.getColumnName(i));
-                    }
-
-                    while (resultSet.next()) {
-                        Object[] row = new Object[columnCount];
-                        for (int i = 1; i <= columnCount; i++) {
-                            row[i - 1] = resultSet.getObject(i);
-                        }
-                        tableModel.addRow(row);
-                    }
-                }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(resultPanel, "Error executing search: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
 
     private static class reportButtonListner implements ActionListener {
         private final Connection connection;
@@ -964,7 +788,7 @@ public class AdminInterface  extends CarRentalSystem {
                     tableModel.setRowCount(0);
 
                     // Set up the table columns based on the ResultSet metadata
-                    java.sql.ResultSetMetaData metaData = resultSet.getMetaData();
+                    ResultSetMetaData metaData = resultSet.getMetaData();
                     int columnCount = metaData.getColumnCount();
 
                     tableModel.setColumnCount(0); // Clear existing columns
@@ -975,7 +799,7 @@ public class AdminInterface  extends CarRentalSystem {
                     // Populate the table with data from the ResultSet
                     while (resultSet.next()) {
                         Object[] row = new Object[columnCount];
-                        for (int i = 1; i <= columnCount; i++) {
+                        for (int i = 1; i <= row.length; i++) {
                             row[i - 1] = resultSet.getObject(i);
                         }
                         tableModel.addRow(row);
@@ -988,7 +812,147 @@ public class AdminInterface  extends CarRentalSystem {
     }
 
 
+    //Search-Panel
+    public static JPanel createAdminSearchPanel(Connection dbConnection) {
+        JPanel resultPanel = new JPanel(new BorderLayout());
 
+        // Create the combo box with search options
+        String[] searchOptions = {"Customer by ID", "Employee by Name", "Employee by ID", "Car by ID", "Reservation by ID", "Car History by Car ID"};
+        JComboBox<String> searchComboBox = new JComboBox<>(searchOptions);
+        searchComboBox.setSelectedIndex(0); // Set "Customer by ID" as the default selection
+
+        // Create the search button
+        JButton searchButton = new JButton("Search");
+        searchButton.setFocusable(false);
+        searchButton.addActionListener(new SearchButtonListener(dbConnection, searchComboBox, resultPanel));
+
+        // Create the result table
+        DefaultTableModel tableModel = new DefaultTableModel();
+        JTable resultTable = new JTable(tableModel);
+        resultTable.setEnabled(false); // Make the table non-editable
+
+        JScrollPane scrollPane = new JScrollPane(resultTable);
+        JButton clearButton = new JButton("Clear");
+        clearButton.setFocusable(false);
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tableModel.setRowCount(0);
+                tableModel.setColumnCount(0);
+            }
+        });
+
+        JPanel topPanel = new JPanel();
+        topPanel.add(searchComboBox);
+        topPanel.add(searchButton);
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(clearButton);
+
+        resultPanel.add(topPanel, BorderLayout.NORTH);
+        resultPanel.add(scrollPane, BorderLayout.CENTER);
+        resultPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        return resultPanel;
+    }
+
+    private static class SearchButtonListener implements ActionListener {
+        private final Connection connection;
+        private final JComboBox<String> searchComboBox;
+        private final JPanel resultPanel;
+
+        public SearchButtonListener(Connection connection, JComboBox<String> searchComboBox, JPanel resultPanel) {
+            this.connection = connection;
+            this.searchComboBox = searchComboBox;
+            this.resultPanel = resultPanel;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String selectedOption = (String) searchComboBox.getSelectedItem();//returns Object, that's why we cast it to string
+            if (selectedOption == null) {
+                JOptionPane.showMessageDialog(resultPanel, "Please select a search option.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String exampleValue = "";
+            switch (selectedOption) {
+                case "Customer by ID":
+                    exampleValue = "cid01";
+                    break;
+                case "Employee by Name":
+                    exampleValue = "John";
+                    break;
+                case "Employee by ID":
+                    exampleValue = "emp01";
+                    break;
+                case "Car by ID":
+                    exampleValue = "caid02";
+                    break;
+                case "Reservation by ID":
+                    exampleValue = "rid01";
+                    break;
+                case "Car History by Car ID":
+                    exampleValue = "caid02";
+                    break;
+            }
+
+            String input = JOptionPane.showInputDialog(resultPanel, "Enter search value:\nExample: " + exampleValue);
+            if (input == null || input.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(resultPanel, "Please enter a search value.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                ResultSet resultSet = null;
+                switch (selectedOption) {
+                    case "Customer by ID":
+                       // prepareStatement() is a method that prepares an SQL statement for execution.
+                        resultSet = connection.prepareStatement("SELECT * FROM Customer_Info('" + input + "')").executeQuery();
+                        break;
+                    case "Employee by Name":
+                        resultSet = connection.prepareStatement("SELECT * FROM Search_EmployeeByName('" + input + "')").executeQuery();
+                        break;
+                    case "Employee by ID":
+                        resultSet = connection.prepareStatement("SELECT * FROM Search_EmployeeById('" + input + "')").executeQuery();
+                        break;
+                    case "Car by ID":
+                        resultSet = connection.prepareStatement("SELECT * FROM Car_Info('" + input + "')").executeQuery();
+                        break;
+                    case "Reservation by ID":
+                        resultSet = connection.prepareStatement("SELECT * FROM Search_ReservationById('" + input + "')").executeQuery();
+                        break;
+                    case "Car History by Car ID":
+                        resultSet = connection.prepareStatement("SELECT * FROM Search_CarHistoryById('" + input + "')").executeQuery();
+                        break;
+                }
+
+                if (resultSet != null) {
+                    DefaultTableModel tableModel = (DefaultTableModel) ((JTable) ((JScrollPane) resultPanel.getComponent(1)).getViewport().getView()).getModel();
+                    tableModel.setRowCount(0); // clear the table
+                    ResultSetMetaData metaData = resultSet.getMetaData();// information about the resultset(column_name and number_of_columns)
+                    int columnCount = metaData.getColumnCount();
+
+                    tableModel.setColumnCount(0);
+                    for (int i = 1; i <= columnCount; i++) {
+                        tableModel.addColumn(metaData.getColumnName(i));
+                    }
+
+                    while (resultSet.next()) {
+                        Object[] row = new Object[columnCount];
+                        for (int i = 1; i <= row.length; i++) {
+                            row[i - 1] = resultSet.getObject(i);
+                        }
+                        tableModel.addRow(row);
+                    }
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(resultPanel, "Error executing search: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 }
+
+
 
 
