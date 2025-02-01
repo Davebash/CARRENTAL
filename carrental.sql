@@ -1,4 +1,4 @@
-﻿CREATE DATABASE rental;
+CREATE DATABASE rental;
 use rental;
 
 -- Set the database to single-user mode to disconnect other users
@@ -44,15 +44,16 @@ CREATE TABLE Employee (
     E_woreda VARCHAR(25) NOT NULL,
     E_houseno VARCHAR(25) NOT NULL,
     E_role VARCHAR(15) NOT NULL DEFAULT 'employee',
-    Branch_id VARCHAR(5) NOT NULL FOREIGN KEY REFERENCES Rental_Branch(Branch_Id),
+    Branch_id VARCHAR(5) NOT NULL,
     email VARCHAR(25) NOT NULL,
-	PhoneNo VARCHAR(15) NOT NULL DEFAULT '+0000000000' CHECK (PhoneNo LIKE '+%[0-9]%'),
+    PhoneNo VARCHAR(15) NOT NULL DEFAULT '+0000000000' CHECK (PhoneNo LIKE '+%[0-9]%'),
     CONSTRAINT check_emp_id CHECK (emp_id LIKE 'emp%'),
     CONSTRAINT check_F_name CHECK (E_F_name NOT LIKE '%[^a-zA-Z]%'),
     CONSTRAINT check_M_name CHECK (E_M_name NOT LIKE '%[^a-zA-Z]%'),
     CONSTRAINT check_L_name CHECK (E_L_name NOT LIKE '%[^a-zA-Z]%'),
     CONSTRAINT check_email CHECK (email LIKE '%@%.%'),
-    PRIMARY KEY(emp_id)
+    PRIMARY KEY(emp_id),
+    FOREIGN KEY (Branch_id) REFERENCES Rental_Branch(Branch_Id) ON DELETE CASCADE
 );
 
 
@@ -72,7 +73,8 @@ CREATE TABLE Customer (
     C_Drivers_LN VARCHAR(20) UNIQUE NOT NULL,
     CONSTRAINT check_C_FName CHECK (C_FName NOT LIKE '%[^a-zA-Z]%'),
     CONSTRAINT check_C_LName CHECK (C_LName NOT LIKE '%[^a-zA-Z]%'),
-    CONSTRAINT check_C_Email CHECK (C_Email LIKE '%@%.%')
+    CONSTRAINT check_C_Email CHECK (C_Email LIKE '%@%.%'),
+
 );
 --Customer indexes
 CREATE INDEX idx_Car_Id ON Customer(Customer_id);
@@ -81,12 +83,13 @@ CREATE INDEX idx_Car_Id ON Customer(Customer_id);
 -- Car Table
 CREATE TABLE Car (
     Car_Id VARCHAR(20) PRIMARY KEY CHECK (Car_Id LIKE 'caid%'),
-	Branch_Id VARCHAR(5) NOT NULL FOREIGN KEY REFERENCES Rental_Branch(Branch_Id),
+    Branch_Id VARCHAR(5) NOT NULL,
     Model VARCHAR(30),
     Plate_No VARCHAR(20) UNIQUE NOT NULL,
-    IsAvailable CHAR(1) DEFAULT '1' ,
+    IsAvailable CHAR(1) DEFAULT '1',
     CONSTRAINT check_car_model CHECK (Model NOT LIKE '%[^a-zA-Z0-9 -]%'),
-	CONSTRAINT check_car_IsAvaliable CHECK (IsAvailable IN ('1', '0')),
+    CONSTRAINT check_car_IsAvaliable CHECK (IsAvailable IN ('1', '0')),
+    FOREIGN KEY (Branch_Id) REFERENCES Rental_Branch(Branch_Id) ON DELETE CASCADE
 );
 
 --Indexes For Car
@@ -97,10 +100,11 @@ CREATE INDEX idx_car_isavailable ON Car (IsAvailable);
 -- Insurance Table
 CREATE TABLE Insurance (
     Insurance_Id VARCHAR(20) PRIMARY KEY CHECK (Insurance_Id LIKE 'iid%'),
-    Car_Id VARCHAR(20) FOREIGN KEY REFERENCES Car(Car_Id),
+    Car_Id VARCHAR(20),
     Insurance_Provider VARCHAR(20),
     Policy_Number VARCHAR(20),
-    I_Expiry_Date DATE
+    I_Expiry_Date DATE,
+    FOREIGN KEY (Car_Id) REFERENCES Car(Car_Id) ON DELETE CASCADE
 );
 
 --Indexes for Insurance 
@@ -110,21 +114,28 @@ CREATE INDEX idx_insurance_car_id ON Insurance (Car_Id);
 -- Reservation Table
 CREATE TABLE Reservation (
     Reservation_Id VARCHAR(20) PRIMARY KEY CHECK (Reservation_Id LIKE 'rid%'),
-    Car_Id VARCHAR(20) NOT NULL CHECK (Car_Id LIKE 'caid%') FOREIGN KEY REFERENCES Car(Car_Id),
-    Customer_Id VARCHAR(20) NOT NULL FOREIGN KEY REFERENCES Customer(Customer_Id),
-	Emp_Id VARCHAR(6) NOT NULL FOREIGN KEY REFERENCES Employee(Emp_Id),
+    Car_Id VARCHAR(20) NOT NULL CHECK (Car_Id LIKE 'caid%'),
+    Customer_Id VARCHAR(20) NOT NULL,
+    Emp_Id VARCHAR(6) NULL,  -- Allow NULL if employee is deleted
     Reservation_Status TINYINT DEFAULT 0, -- 0: Canceled, 1: Pending, 2: Confirmed
-	Collateral_Id VARCHAR(20) NULL, --Initally nullable for status being canceled and pending
+    Collateral_Id VARCHAR(20) NULL,
     PickUp_Date DATE NOT NULL,
     Dropoff_Date DATE NOT NULL,
     Pickup_Location VARCHAR(20) NOT NULL,
     Dropoff_Location VARCHAR(20) NOT NULL,
-    Payment_Id VARCHAR(20) NULL, -- Initially nullable
-    Insurance_Id VARCHAR(20) NOT NULL FOREIGN KEY REFERENCES Insurance(Insurance_Id),
+    Payment_Id VARCHAR(20) NULL,
+    Insurance_Id VARCHAR(20) NOT NULL,
+
     CONSTRAINT check_reservation_status CHECK (Reservation_Status IN (0, 1, 2)),
     CONSTRAINT check_pickup_location CHECK (Pickup_Location NOT LIKE '%[^a-zA-Z0-9 ]%'),
-    CONSTRAINT check_dropoff_location CHECK (Dropoff_Location NOT LIKE '%[^a-zA-Z0-9 ]%')
+    CONSTRAINT check_dropoff_location CHECK (Dropoff_Location NOT LIKE '%[^a-zA-Z0-9 ]%'),
+
+    FOREIGN KEY (Car_Id) REFERENCES Car(Car_Id) ON DELETE CASCADE,
+    FOREIGN KEY (Customer_Id) REFERENCES Customer(Customer_Id) ON DELETE CASCADE,
+    FOREIGN KEY (Emp_Id) REFERENCES Employee(Emp_Id) ON DELETE NO ACTION, -- Fix cascade issue
+    FOREIGN KEY (Insurance_Id) REFERENCES Insurance(Insurance_Id) ON DELETE NO ACTION
 );
+
 
 --Indexes for Reservation
 CREATE INDEX idx_reservation_car_id ON Reservation (Car_Id);
@@ -136,27 +147,31 @@ CREATE INDEX idx_reservation_status ON Reservation (Reservation_Status);
 -- Collateral Table
 CREATE TABLE Collateral (
     Collateral_Id VARCHAR(20) PRIMARY KEY CHECK (Collateral_Id LIKE 'col%'),
-    Customer_Id VARCHAR(20) NOT NULL FOREIGN KEY REFERENCES Customer(Customer_Id),
-    Car_Id VARCHAR(20) NOT NULL FOREIGN KEY REFERENCES Car(Car_Id),
-	Reservation_Id VARCHAR(20) FOREIGN KEY REFERENCES Reservation(Reservation_Id),
+    Customer_Id VARCHAR(20)  NULL,
+    Car_Id VARCHAR(20) NOT NULL,
+    Reservation_Id VARCHAR(20) NULL,
     Collateral_Type VARCHAR(50) NOT NULL,
     Amount DECIMAL(10, 2) NOT NULL,
-    Date_Received DATE 
+    Date_Received DATE,
+    FOREIGN KEY (Customer_Id) REFERENCES Customer(Customer_Id) ON DELETE SET NULL,
+    FOREIGN KEY (Car_Id) REFERENCES Car(Car_Id) ON DELETE CASCADE,
+    FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE  NO ACTION
 );
 
 -- Payment Table
 CREATE TABLE Payment (
     Payment_Id VARCHAR(20) PRIMARY KEY CHECK (Payment_Id LIKE 'pid%'),
-    Reservation_Id VARCHAR(20) NOT NULL FOREIGN KEY REFERENCES Reservation(Reservation_Id),
+    Reservation_Id VARCHAR(20) NOT NULL,
     Price_Per_Car DECIMAL(10, 2) NOT NULL,
     No_Cars INT NOT NULL,
-	Payment_Type VARCHAR(8),
+    Payment_Type VARCHAR(8),
     Total_Price DECIMAL(10, 2),
     Payment_Method VARCHAR(20),
     Payment_Date DATE,
     CONSTRAINT check_payment_method CHECK (Payment_Method IN ('Card', 'Cash', 'Other')),
-	CONSTRAINT check_payment_type CHECK (Payment_Type IN ('Full', 'Partial')),
-    CONSTRAINT check_total_price CHECK (Total_Price >= 0)
+    CONSTRAINT check_payment_type CHECK (Payment_Type IN ('Full', 'Partial')),
+    CONSTRAINT check_total_price CHECK (Total_Price >= 0),
+    FOREIGN KEY (Reservation_Id) REFERENCES Reservation(Reservation_Id) ON DELETE CASCADE
 );
 
 -- After both tables are created, add the foreign key to Reservation
@@ -173,22 +188,49 @@ CREATE INDEX idx_payment_reservation_id ON Payment (Reservation_Id);
 -- Car History Table
 CREATE TABLE Car_History (
     History_Id VARCHAR(20) PRIMARY KEY CHECK (History_Id LIKE 'hid%'),
-    Car_Id VARCHAR(20) NOT NULL FOREIGN KEY REFERENCES Car(Car_Id),
+    Car_Id VARCHAR(20) NOT NULL,
     Description VARCHAR(50),
     Record_Type VARCHAR(20),
-    CONSTRAINT check_record_type CHECK (Record_Type IN ('Service', 'Damage', 'Maintenance', 'Other'))
+    CONSTRAINT check_record_type CHECK (Record_Type IN ('Service', 'Damage', 'Maintenance', 'Other')),
+    FOREIGN KEY (Car_Id) REFERENCES Car(Car_Id) ON DELETE CASCADE
 );
 
-EXEC sp_help 'car_history';
 
---Table Population
+CREATE PROCEDURE Update_Collateral
+AS
+BEGIN
+    UPDATE Reservation
+    SET Reservation.Collateral_Id = c.Collateral_Id
+    FROM Reservation reserve
+    INNER JOIN Collateral c ON reserve.Reservation_Id = c.Reservation_Id
+    WHERE reserve.Collateral_Id IS NULL;
+END;
+
+
+--Updating the reservation table after populating the payment table 
+CREATE PROCEDURE Update_Payment
+AS
+BEGIN
+    UPDATE reserve
+    SET reserve.Payment_Id = p.Payment_Id
+    FROM Reservation reserve
+    INNER JOIN Payment p ON reserve.Reservation_Id = p.Reservation_Id
+    WHERE reserve.Payment_Id IS NULL;
+
+END;
+
+--***********************----
+
+
+
+-- Table Population
+
 -- Populating Rental_Branch Table
 INSERT INTO Rental_Branch (Branch_id, B_Region, B_Zone, B_Woreda) 
 VALUES 
 ('bid01', 'Addis Ababa', 'Bole', 1),
 ('bid02', 'Oromia', 'Adama', 2),
 ('bid03', 'Amhara', 'Bahir Dar', 3);
-
 
 -- Populating Employee Table
 INSERT INTO Employee (Emp_id, E_F_name, E_M_name, E_L_name, E_region, E_woreda, E_houseno, E_role, Branch_id, email) 
@@ -201,12 +243,11 @@ VALUES
 ('emp06', 'Sena', 'Abebe', 'Tadesse', 'Addis Ababa', '4', '404', 'employee', 'bid01', 'sena@rental.com'),
 ('emp07', 'Kebede', 'Tewodros', 'Tesfaye', 'Oromia', '5', '505', 'employee', 'bid02', 'kebede@rental.com'),
 ('emp08', 'Hana', 'Mulu', 'Solomon', 'Amhara', '6', '606', 'employee', 'bid03', 'hana@rental.com'),
-('emp09', 'Yared', 'Tesfaye', 'Biruk', 'Addis Ababa', '7', '707', 'employee', 'bid01', 'yared@rental.com'),
-('emp10', 'Fikirte', 'Alem', 'Girma', 'Oromia', '8', '808', 'employee', 'bid02', 'fikirte@rental.com');
-
+('emp09', 'Yared', 'Tesfaye', 'Biruk', 'Addis Ababa', '7', '707', 'employee', 'bid01', 'yared@rental.com');
 
 -- Populating Customer Table
-INSERT INTO Customer (Customer_Id, C_FName, C_LName, C_Phone_No, C_Email, C_Region, C_Zone, C_House_No, C_Drivers_LN) VALUES
+INSERT INTO Customer (Customer_Id, C_FName, C_LName, C_Phone_No, C_Email, C_Region, C_Zone, C_House_No, C_Drivers_LN) 
+VALUES
 ('cid01', 'Kassahun', 'Getachew', '0911234567', 'kassahun@gmail.com', 'Addis Ababa', 'Bole', 'H001', 'DL1234'),
 ('cid02', 'Hanna', 'Tesfaye', '0912234567', 'hanna@gmail.com', 'Addis Ababa', 'Bole', 'H002', 'DL1235'),
 ('cid03', 'Meron', 'Assefa', '0913234567', 'meron@gmail.com', 'Oromia', 'Adama', 'H003', 'DL1236'),
@@ -219,7 +260,8 @@ INSERT INTO Customer (Customer_Id, C_FName, C_LName, C_Phone_No, C_Email, C_Regi
 ('cid10', 'Fikir', 'Lemma', '0920234567', 'fikir@gmail.com', 'Amhara', 'Bahir Dar', 'H010', 'DL1243');
 
 -- Populating Car Table 
-INSERT INTO Car (Car_Id, Branch_Id, Model, Plate_No, IsAvailable) VALUES
+INSERT INTO Car (Car_Id, Branch_Id, Model, Plate_No, IsAvailable) 
+VALUES
 ('caid01', 'bid01', 'Toyota Corolla', 'ABC123', '0'),
 ('caid02', 'bid02', 'Nissan Sunny', 'DEF456', '0'),
 ('caid03', 'bid03', 'Hyundai Elantra', 'GHI789', '1'),
@@ -241,41 +283,30 @@ INSERT INTO Car (Car_Id, Branch_Id, Model, Plate_No, IsAvailable) VALUES
 ('caid19', 'bid01', 'Honda CR-V', 'CDE567', '1'),
 ('caid20', 'bid02', 'Hyundai Tucson', 'FGH890', '0');
 
-
 -- Populating Insurance Table
-INSERT INTO Insurance (Insurance_Id, Car_Id, Insurance_Provider, Policy_Number, I_Expiry_Date) VALUES
+INSERT INTO Insurance (Insurance_Id, Car_Id, Insurance_Provider, Policy_Number, I_Expiry_Date) 
+VALUES
 ('iid01', 'caid01', 'ABC Insurance', 'POL123', '2025-06-01'),
 ('iid02', 'caid02', 'XYZ Insurance', 'POL456', '2025-07-01'),
 ('iid03', 'caid04', 'LMN Insurance', 'POL789', '2025-08-01'),
 ('iid04', 'caid05', 'PQR Insurance', 'POL012', '2025-09-01'),
-('iid05', 'caid06', 'DEF Insurance', 'POL345', '2025-10-01'),
-('iid06', 'caid07', 'GHI Insurance', 'POL678', '2025-11-01'),
-('iid07', 'caid08', 'JKL Insurance', 'POL901', '2025-12-01'),
-('iid08', 'caid09', 'MNO Insurance', 'POL234', '2026-01-01'),
-('iid09', 'caid10', 'STU Insurance', 'POL567', '2026-02-01'),
-('iid10', 'caid11', 'VWX Insurance', 'POL890', '2026-03-01'),
-('iid11', 'caid12', 'YZA Insurance', 'POL321', '2026-04-01'),
-('iid12', 'caid13', 'BCD Insurance', 'POL654', '2026-05-01');
+('iid05', 'caid06', 'DEF Insurance', 'POL345', '2025-10-01');
 
+-- Populating Reservation Table
 INSERT INTO Reservation (Reservation_Id, Car_Id, Customer_Id, Emp_Id, Reservation_Status, Collateral_Id, PickUp_Date, Dropoff_Date, Pickup_Location, Dropoff_Location, Payment_Id, Insurance_Id) 
 VALUES
 ('rid01', 'caid01', 'cid01', 'emp01', 2, NULL, '2024-06-01', '2024-06-10', 'Bole', 'Bole', NULL, 'iid01'),
 ('rid02', 'caid02', 'cid02', 'emp02', 2, NULL, '2024-06-05', '2024-06-15', 'Adama', 'Adama', NULL, 'iid02'),
-('rid03', 'caid04', 'cid03', 'emp03', 2, NULL, '2024-06-03', '2024-06-13', 'Bahir Dar', 'Bahir Dar', NULL, 'iid03'),
+('rid03', 'caid04', 'cid03', 'emp03', 1, NULL, '2024-06-03', '2024-06-13', 'Bahir Dar', 'Bahir Dar', NULL, 'iid03'),
 ('rid04', 'caid05', 'cid04', 'emp04', 2, NULL, '2024-06-06', '2024-06-16', 'Bole', 'Adama', NULL, 'iid04'),
-('rid05', 'caid06', 'cid05', 'emp05', 2, NULL, '2024-06-07', '2024-06-17', 'Bole', 'Bole', NULL, 'iid05'),
-('rid06', 'caid07', 'cid06', 'emp06', 2, NULL, '2024-06-08', '2024-06-18', 'Adama', 'Bole', NULL, 'iid06'),
-('rid07', 'caid08', 'cid07', 'emp07', 2, NULL, '2024-06-09', '2024-06-19', 'Bahir Dar', 'Bole', NULL, 'iid07'),
-('rid08', 'caid09', 'cid08', 'emp08', 2, NULL, '2024-06-10', '2024-06-20', 'Bole', 'Adama', NULL, 'iid08'),
-('rid09', 'caid10', 'cid09', 'emp09', 2, NULL, '2024-06-11', '2024-06-21', 'Adama', 'Bahir Dar', NULL, 'iid09'),
-('rid10', 'caid11', 'cid10', 'emp10', 2, NULL, '2024-06-12', '2024-06-22', 'Bole', 'Adama', NULL, 'iid10'),
-('rid11', 'caid12', 'cid01', 'emp01', 1, NULL, '2024-06-25', '2024-07-05', 'Bole', 'Bole', NULL, 'iid11'),
-('rid12', 'caid13', 'cid02', 'emp04', 1, NULL, '2024-06-26', '2024-07-06', 'Adama', 'Bahir Dar', NULL, 'iid12');
--- Populating Reservation Table
--- Rented (Full Payment, Collateral Provided)
-
-
--- Scheduled (ቀብድ paid, No collateral)
+('rid05', 'caid06', 'cid05', 'emp05', 1, NULL, '2024-06-07', '2024-06-17', 'Bole', 'Bole', NULL, 'iid05'),
+('rid06', 'caid07', 'cid06', 'emp06', 2, NULL, '2024-06-08', '2024-06-18', 'Adama', 'Bole', NULL, 'iid05'),
+('rid07', 'caid08', 'cid07', 'emp07', 1, NULL, '2024-06-09', '2024-06-19', 'Bahir Dar', 'Bole', NULL, 'iid03'),
+('rid08', 'caid11', 'cid08', 'emp08', 2, NULL, '2024-06-10', '2024-06-20', 'Bole', 'Adama', NULL, 'iid01'),
+('rid09', 'caid12', 'cid09', 'emp09', 1, NULL, '2024-06-11', '2024-06-21', 'Bole', 'Bole', NULL, 'iid02'),
+('rid10', 'caid14', 'cid10', 'emp01', 2, NULL, '2024-06-12', '2024-06-22', 'Adama', 'Bole', NULL, 'iid04'),
+('rid11', 'caid16', 'cid01', 'emp02', 1, NULL, '2024-06-13', '2024-06-23', 'Bahir Dar', 'Bole', NULL, 'iid05'),
+('rid12', 'caid17', 'cid02', 'emp03', 1, NULL, '2024-06-14', '2024-06-24', 'Bole', 'Adama', NULL, 'iid01');
 
 -- Populating Collateral Table
 INSERT INTO Collateral (Collateral_Id, Customer_Id, Car_Id, Reservation_Id, Collateral_Type, Amount, Date_Received) 
@@ -286,22 +317,11 @@ VALUES
 ('col04', 'cid04', 'caid05', 'rid04', 'Cash', 700.00, '2024-06-06'),
 ('col05', 'cid05', 'caid06', 'rid05', 'Home Land Map', 0.00, '2024-06-07'),
 ('col06', 'cid06', 'caid07', 'rid06', 'Credit Card Hold', 1200.00, '2024-06-08'),
-('col07', 'cid07', 'caid08', 'rid07', 'Cash', 900.00, '2024-06-09'),
-('col08', 'cid08', 'caid09', 'rid08', 'Business License', 0.00, '2024-06-10'),
-('col09', 'cid09', 'caid10', 'rid09', 'Credit Card Hold', 1500.00, '2024-06-11'),
-('col10', 'cid10', 'caid11', 'rid10', 'Cash', 800.00, '2024-06-12');
+('col07', 'cid07', 'caid08', 'rid07', 'Cash', 900.00, '2024-06-09');
 
---Updating the reservation table after populating the collateral table 
+-- Updating the reservation table after populating the collateral table 
+EXEC Update_Collateral;
 
-UPDATE reserve
-SET reserve.Collateral_Id = c.Collateral_Id
-FROM Reservation reserve
-INNER JOIN Collateral c ON reserve.Reservation_Id = c.Reservation_Id
-WHERE reserve.Collateral_Id IS NULL;
-
---***********************----
-
--- Populating Payment Table
 -- Populating Payment Table
 INSERT INTO Payment (Payment_Id, Reservation_Id, Price_Per_Car, No_Cars, Payment_Type, Total_Price, Payment_Method, Payment_Date)
 VALUES 
@@ -318,24 +338,24 @@ VALUES
 ('pid11', 'rid11', 800.00, 1, 'Partial', 800.00, 'Card', '2024-06-25'),
 ('pid12', 'rid12', 1000.00, 1, 'Partial', 1000.00, 'Card', '2024-06-26');
 
---Updating the reservation table after populating the payment table 
-
-UPDATE reserve
-SET reserve.Payment_Id = p.Payment_Id
-FROM Reservation reserve
-INNER JOIN Payment p ON reserve.Reservation_Id = p.Reservation_Id
-WHERE reserve.Payment_Id IS NULL;
-
---***********************----
-
+-- Updating the reservation table after populating the payment table 
+EXEC Update_Payment;
 
 -- Populating Car_History Table
 INSERT INTO Car_History (History_Id, Car_Id, Description, Record_Type) 
 VALUES 
 ('hid01', 'caid01', 'Regular Maintenance', 'Maintenance'),
 ('hid02', 'caid02', 'Minor Accident', 'Damage'),
-('hid03', 'caid03', 'Annual Service', 'Service');
+('hid03', 'caid03', 'Annual Service', 'Service'),
+('hid04', 'caid04', 'Tire Replacement', 'Maintenance'),
+('hid05', 'caid05', 'Engine Check', 'Service'),
+('hid06', 'caid06', 'Brake Repair', 'Maintenance'),
+('hid07', 'caid07', 'Oil Change', 'Service');
 
+
+--Updating the reservation table after populating the collateral table 
+
+--DROP PROCEDURE update_collateral
 
 -- View that shows which branch an employee works at
 CREATE VIEW Employee_Branch AS
@@ -473,7 +493,7 @@ LEFT JOIN
     Car_History CH ON CH.Car_Id = C.Car_Id;
 
 -- Drop old car report
-DROP VIEW Car_Report;
+--DROP VIEW Car_Report;
 
 
 
@@ -486,6 +506,7 @@ SELECT * FROM Collateral;
 SELECT * FROM Reservation;
 SELECT * FROM Payment;
 SELECT * FROM Car_History;
+SELECT * FROM Rental_Branch;
 
 
 
@@ -501,10 +522,13 @@ SELECT * FROM car_Report;
 
 
 
+
 -- ==========================================================
 -- FUNCTION: Search for Customer by ID
 -- ==========================================================
-CREATE FUNCTION Customer_Info(@Cid VARCHAR(5))
+--DROP FUNCTION Customer_Info
+
+CREATE FUNCTION Customer_Info(@Cid VARCHAR(20))
 RETURNS TABLE
 AS
 RETURN
@@ -515,10 +539,14 @@ RETURN
 -- Test the function
 SELECT * FROM Customer_Info('cid01');  -- Replace 'cid01' with a valid Customer ID
 
+
 -- ==========================================================
 -- FUNCTION: Search for Employee by Name
 -- ==========================================================
-CREATE FUNCTION Search_EmployeeByName(@Name VARCHAR(100))
+
+--DROP FUNCTION Search_EmployeeByName
+
+CREATE FUNCTION Search_EmployeeByName(@Name VARCHAR(20))
 RETURNS TABLE
 AS
 RETURN
@@ -533,7 +561,9 @@ SELECT * FROM Search_EmployeeByName('John');  -- Replace 'John' with a valid nam
 -- ==========================================================
 -- FUNCTION: Search for Employee by ID
 -- ==========================================================
-CREATE FUNCTION Search_EmployeeById(@Id VARCHAR(100))
+--DROP FUNCTION Search_EmployeeById
+
+CREATE FUNCTION Search_EmployeeById(@Id VARCHAR(20))
 RETURNS TABLE
 AS
 RETURN
@@ -547,16 +577,19 @@ SELECT * FROM Search_EmployeeById('emp01');  -- Replace 'emp01' with a valid Emp
 -- ==========================================================
 -- FUNCTION: Search for Car by ID
 -- ==========================================================
-CREATE FUNCTION Car_Info(@Sid VARCHAR(5))
-RETURNS TABLE
-AS
-RETURN
-    SELECT * 
-    FROM car_Report c
-    WHERE c.car_id = @Sid;
+--Drop Function Car_Info
+
+CREATE FUNCTION Car_Info(@Sid VARCHAR(20))  
+RETURNS TABLE  
+AS  
+RETURN  
+SELECT * FROM car_Report  
+WHERE Car_id = @Sid;
 
 -- Test the function
 SELECT * FROM Car_Info('caid02');  -- Replace 'caid02' with a valid Car ID
+
+
 
 -- ==========================================================
 -- FUNCTION: Search for Reservation by ID
@@ -575,7 +608,9 @@ SELECT * FROM Search_ReservationById('rid01');  -- Replace 'rid01' with a valid 
 -- ==========================================================
 -- FUNCTION: Search for Car History by Car ID
 -- ==========================================================
-CREATE FUNCTION Search_CarHistoryById(@CarId VARCHAR(5))
+--DROP FUNCTION Search_CarHistoryById
+
+CREATE FUNCTION Search_CarHistoryById(@CarId VARCHAR(20))
 RETURNS TABLE
 AS
 RETURN
@@ -587,3 +622,5 @@ RETURN
 SELECT * FROM Search_CarHistoryById('caid03');  -- Replace 'caid02' with a valid Car ID
 
 
+
+EXEC sp_help 'Rental_Branch';
