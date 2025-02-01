@@ -28,19 +28,19 @@ class EmployeeListener implements ActionListener {
         } else if (e.getSource() == emp.updateResBtn) {
             updateTable(emp.resTable, emp.modelRes); // Update reservation table
         } else if (e.getSource() == emp.updateColBtn) {
-            updateTable(emp.colTable, emp.modelColl); // Update collection table
+            updateTable(emp.colTable, emp.modelColl); // Update collateral table
         } else if (e.getSource() == emp.updateBraBtn) {
             updateTable(emp.braTable, emp.modelBranch); // Update branch table
         } else if (e.getSource() == emp.addBtnCust) {
             insertCustomer(); // Call the method for inserting a customer
-        } else if (e.getSource() == emp.addBtnCar) {
-            insertCar(); // Call the method for inserting a car
         } else if (e.getSource() == emp.addBtnRes) {
             insertReservation(); // Call the method for inserting a reservation
         } else if (e.getSource() == emp.addBtnPay) {
             insertPayment(); // Call the method for inserting a payment
         } else if (e.getSource() == emp.addBtnColl) {
             insertCollateral(); // Call the method for inserting collateral
+        } else if (e.getSource() == emp.addBtnBranch) {
+            insertRentalBranch(); // Call the method for inserting branch
         }
 
 
@@ -72,26 +72,6 @@ class EmployeeListener implements ActionListener {
         }
         JOptionPane.showMessageDialog(null, "Customer added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
     }
-
-
-    // Car Insertion
-    private void insertCar() {
-        try (PreparedStatement pstmt = emp.connection.prepareStatement(
-                "INSERT INTO Car VALUES (?, ?, ?, ?, ?)")) {
-            pstmt.setString(1, emp.carIdField.getText());
-            pstmt.setString(2, emp.branchIdField.getText());
-            pstmt.setString(3, emp.modelField.getText());
-            pstmt.setString(4, emp.plateField.getText());
-            pstmt.setString(5, emp.availableCombo.getSelectedItem().toString());
-            pstmt.executeUpdate();
-            emp.loadTableData("SELECT * FROM Car", emp.modelCar);
-            emp.clearFields(emp.inputCarPanel);
-            JOptionPane.showMessageDialog(null, "Car added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (SQLException ex) {
-            emp.showError("Car Add Error", ex);
-        }
-    }
-
 
     // Reservation Insertion
     private void insertReservation() {
@@ -180,6 +160,23 @@ class EmployeeListener implements ActionListener {
             emp.showError("Collateral Add Error", ex);
         }
     }
+
+    private void insertRentalBranch() {
+        try (PreparedStatement pstmt = emp.connection.prepareStatement(
+                "INSERT INTO Rental_Branch VALUES (?, ?, ?, ?)")) {
+            pstmt.setString(1, emp.branchIdField.getText());
+            pstmt.setString(2, emp.bRegionField.getText());
+            pstmt.setString(3, emp.bZoneField.getText());
+            pstmt.setInt(4, Integer.parseInt(emp.bWoredaField.getText()));
+            pstmt.executeUpdate();
+            emp.loadTableData("SELECT * FROM Rental_Branch", emp.modelBranch);
+            emp.clearFields(emp.inputBranchPanel);
+            JOptionPane.showMessageDialog(null, "Rental_Branch added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            emp.showError("Rental_Branch Add Error", ex);
+        }
+    }
+
 
     private void updateTable(JTable updateTable, DefaultTableModel updateModel) {
         int row = updateTable.getSelectedRow();
