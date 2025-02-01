@@ -28,14 +28,27 @@ public class ManagerListner implements ActionListener {
             insertReservation(); // Call the method for inserting a reservation
         } else if (e.getSource() == admin.addBtnPay) {
             insertPayment(); // Call the method for inserting a payment
+        } else if (e.getSource() == admin.addBtnIns) {
+            insertInsurance(); // Call the method for inserting insurance
         } else if (e.getSource() == admin.addBtnColl) {
             insertCollateral(); // Call the method for inserting collateral
+        } else if (e.getSource() == admin.addBtnBranch) {
+            insertRentalBranch(); // Call the method for inserting branch
         } else if (e.getSource() == admin.addBtnHistory) {
-            insertCarHis();
+            insertCarHis(); // Call the method for inserting car-history
         } else if (e.getSource() == admin.updateCusBtn) {
             updateTable(admin.cusTable, admin.modelCust); // Update customer table
+        } else if (e.getSource() == admin.updateCarBtn) {
+            updateTable(admin.caTable, admin.modelCar); // Update car table
+        } else if (e.getSource() == admin.updateResBtn) {
+            updateTable(admin.resTable, admin.modelRes); // Update reservation table
+        } else if (e.getSource() == admin.updateInsBtn) {
+            updateTable(admin.insTable, admin.modelIns); // Update insurance table
+        } else if (e.getSource() == admin.updateColBtn) {
+            updateTable(admin.colTable, admin.modelColl); // Update collateral table
+        } else if (e.getSource() == admin.updateBraBtn) {
+            updateTable(admin.braTable, admin.modelBranch); // Update branch table
         }
-
 
     }
 
@@ -72,7 +85,7 @@ public class ManagerListner implements ActionListener {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
                 "INSERT INTO Car VALUES (?, ?, ?, ?, ?)")) {
             pstmt.setString(1, admin.carIdField.getText());
-            pstmt.setString(2, admin.branchIdField.getText());
+            pstmt.setString(2, admin.carBranchIdField.getText());
             pstmt.setString(3, admin.modelField.getText());
             pstmt.setString(4, admin.plateField.getText());
             pstmt.setString(5, admin.availableCombo.getSelectedItem().toString());
@@ -144,6 +157,24 @@ public class ManagerListner implements ActionListener {
         }
     }
 
+    // Insurance Insertion
+    private void insertInsurance() {
+        try (PreparedStatement pstmt = admin.connection.prepareStatement(
+                "INSERT INTO Insurance VALUES (?, ?, ?, ?, ?)")) {
+            pstmt.setString(1, admin.insuranceIdField.getText());
+            pstmt.setString(2, admin.insCarIdField.getText());
+            pstmt.setString(3, admin.policyNoField.getText());
+            pstmt.setString(4, admin.providerField.getText());
+            pstmt.setString(5, admin.expireDateField.getText());
+            pstmt.executeUpdate();
+            admin.loadTableData("SELECT * FROM Insurance", admin.modelIns);
+            admin.clearFields(admin.inputInsPanel);
+            JOptionPane.showMessageDialog(null, "Insurance added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            admin.showError("Insurance Add Error", ex);
+        }
+    }
+
 
     // Collateral Insertion
     private void insertCollateral() {
@@ -174,15 +205,32 @@ public class ManagerListner implements ActionListener {
             admin.showError("Collateral Add Error", ex);
         }
     }
-    
+
+
+    private void insertRentalBranch() {
+        try (PreparedStatement pstmt = admin.connection.prepareStatement(
+                "INSERT INTO Rental_Branch VALUES (?, ?, ?, ?)")) {
+            pstmt.setString(1, admin.branchIdField.getText());
+            pstmt.setString(2, admin.bRegionField.getText());
+            pstmt.setString(3, admin.bZoneField.getText());
+            pstmt.setInt(4, Integer.parseInt(admin.bWoredaField.getText()));
+            pstmt.executeUpdate();
+            admin.loadTableData("SELECT * FROM Rental_Branch", admin.modelBranch);
+            admin.clearFields(admin.inputBranchPanel);
+            JOptionPane.showMessageDialog(null, "Rental_Branch added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            admin.showError("Rental_Branch Add Error", ex);
+        }
+    }
+
     private void insertCarHis() {
         System.out.println("I am in the insertCarHis Statement");
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
-                "INSERT INTO Car_History (History_Id, Car_Id, Description, Record_Type) VALUES (?, ?, ?, ?)")) {
+                "INSERT INTO Car_History VALUES (?, ?, ?, ?)")) {
 
             // Set parameters from the input fields
             pstmt.setString(1, admin.historyIdField.getText()); // History ID
-            pstmt.setString(2, admin.carHisIdField.getText()); // Car ID
+            pstmt.setString(2, admin.carHisIdField .getText()); // Car ID
             pstmt.setString(3, admin.descriptionField.getText()); // Description
             pstmt.setString(4, admin.recordTypeField.getText()); // Record Type
 
@@ -204,6 +252,7 @@ public class ManagerListner implements ActionListener {
         }
     }
 
+
     private void updateTable(JTable updateTable, DefaultTableModel updateModel) {
         int row = updateTable.getSelectedRow();
         if (row == -1) {
@@ -219,6 +268,24 @@ public class ManagerListner implements ActionListener {
             switch (tableName) {
                 case "Customer":
                     updateCustomer(primaryKey, updateModel);
+                    break;
+                case "Car":
+                    updateCar(primaryKey, updateModel);
+                    break;
+                case "Reservation":
+                    updateTable(primaryKey, updateModel);
+                    break;
+                case "Payment":
+                    updatePayment(primaryKey, updateModel);
+                    break;
+                case "Insurance":
+                    updateInsurance(primaryKey, updateModel);
+                    break;
+                case "Collateral":
+                    updateCollateral(primaryKey, updateModel);
+                    break;
+                case "Rental Branch":
+                    updateRentalBranch(primaryKey, updateModel);
                     break;
                 default:
                     System.out.println("Unknown table: " + tableName);
@@ -264,7 +331,7 @@ public class ManagerListner implements ActionListener {
         String query = "UPDATE Car SET Car_Id=?, Branch_Id=?, Model=?, Plate_No=?, IsAvailable=? WHERE Car_Id=?";
         try (PreparedStatement pstmt = admin.connection.prepareStatement(query)) {
             pstmt.setString(1, admin.carIdField.getText());
-            pstmt.setString(2, admin.branchIdField.getText());
+            pstmt.setString(2, admin.carBranchIdField.getText());
             pstmt.setString(3, admin.modelField.getText());
             pstmt.setString(4, admin.plateField.getText());
             pstmt.setString(5, admin.availableCombo.getSelectedItem().toString());
@@ -286,7 +353,7 @@ public class ManagerListner implements ActionListener {
     }
 
     // Reservation Update
-    private void updateReservation(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateTable(String originalId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Reservation SET Reservation_Id=?, Car_Id=?, Customer_Id=?, Emp_Id=?, Reservation_Status=?, Collateral_Id=?, PickUp_Date=?, Dropoff_Date=?, Pickup_Location=?, Dropoff_Location=?, Payment_Id=?, Insurance_Id=? WHERE Reservation_Id=?";
         try (PreparedStatement pstmt = admin.connection.prepareStatement(query)) {
             pstmt.setString(1, admin.reservationIdField.getText());
@@ -423,94 +490,4 @@ public class ManagerListner implements ActionListener {
             ex.printStackTrace();
         }
     }
-
-    private void updateCarHistory(String originalId, DefaultTableModel model) throws SQLException {
-        String query = "UPDATE Car_History SET History_Id=?, Car_Id=?, Description=?, Record_Type=? WHERE History_Id=?";
-        try (PreparedStatement pstmt = admin.connection.prepareStatement(query)) {
-            // Set parameters from input fields
-            pstmt.setString(1, admin.historyIdField.getText());
-            pstmt.setString(2, admin.carBranchIdField.getText());
-            pstmt.setString(3, admin.descriptionField.getText());
-            pstmt.setString(4, admin.recordTypeField.getText());
-            pstmt.setString(5, originalId);
-
-            pstmt.executeUpdate();
-            admin.loadTableData("SELECT * FROM Car_History", model);
-        } catch (SQLException ex) {
-            admin.showError("History Update Failed", ex);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(admin,
-                    "Unexpected error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void deleteCustomer(String customerId) {
-        try (PreparedStatement pstmt = admin.connection.prepareStatement(
-                "DELETE FROM Customer WHERE Customer_Id = ?")) {
-
-            pstmt.setString(1, customerId); // Use the provided customerId
-            int rowsDeleted = pstmt.executeUpdate();
-
-            if (rowsDeleted > 0) {
-                admin.loadTableData("SELECT * FROM Customer", admin.modelCust);
-                JOptionPane.showMessageDialog(null, "Customer deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "No customer found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-
-        } catch (SQLException ex) {
-            admin.showError("Customer Delete Error", ex);
-        }
-    }
-
-    private void deleteRecord(String tableName, String primaryKeyColumn, String primaryKeyValue) {
-        String query = "DELETE FROM " + tableName + " WHERE " + primaryKeyColumn + " = ?";
-        DefaultTableModel mod;
-//        admin.tableName.getModel();
-//        admin.cusTable.getModel()
-        try (PreparedStatement pstmt = admin.connection.prepareStatement(query)) {
-            pstmt.setString(1, primaryKeyValue); // Set the primary key value
-            int rowsDeleted = pstmt.executeUpdate();
-
-            if (rowsDeleted > 0) {
-                // Reload the table data to reflect the deletion
-                admin.loadTableData("SELECT * FROM " + tableName, getTableModel(tableName));
-                JOptionPane.showMessageDialog(null, "Record deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "No record found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException ex) {
-            admin.showError("Delete Error", ex);
-        }
-    }
-
-    private DefaultTableModel getTableModel(String tableName) {
-        switch (tableName) {
-            case "Customer":
-                return (DefaultTableModel) admin.cusTable.getModel();
-            case "Car":
-                return (DefaultTableModel) admin.caTable.getModel();
-            case "Reservation":
-                return (DefaultTableModel) admin.resTable.getModel();
-            case "Payment":
-                return (DefaultTableModel) admin.payTable.getModel();
-            case "Employee":
-                return (DefaultTableModel) admin.empTable.getModel();
-            case "Insurance":
-                return (DefaultTableModel) admin.insTable.getModel();
-            case "Collateral":
-                return (DefaultTableModel) admin.colTable.getModel();
-            case "Rental_Branch":
-                return (DefaultTableModel) admin.braTable.getModel();
-            case "Car_History":
-                return (DefaultTableModel) admin.hisTable.getModel();
-            default:
-                System.out.println("Unknown table: " + tableName);
-                return null;
-        }
-    }
-
 }
