@@ -39,27 +39,27 @@ class AdminListner implements ActionListener {
             insertCollateral(); // Call the method for inserting collateral
         }
         else if (e.getSource() == admin.addBtnBranch) {
-            insertRentalBranch(); // Call the method for inserting collateral
+            insertRentalBranch(); // Call the method for inserting branch
         } else if (e.getSource() == admin.addBtnHistory) {
             insertCarHis();
         } else if (e.getSource() == admin.updateCusBtn) {
-            updateReservation(admin.cusTable, admin.modelCust); // Update customer table
+            updateTable(admin.cusTable, admin.modelCust); // Update customer table
         } else if (e.getSource() == admin.updateCarBtn) {
-            updateReservation(admin.caTable, admin.modelCar); // Update car table
+            updateTable(admin.caTable, admin.modelCar); // Update car table
         } else if (e.getSource() == admin.updateResBtn) {
-            updateReservation(admin.resTable, admin.modelRes); // Update reservation table
+            updateTable(admin.resTable, admin.modelRes); // Update reservation table
         } else if (e.getSource() == admin.updateEmpBtn) {
-            updateReservation(admin.empTable, admin.modelEmp); // Update employee table
+            updateTable(admin.empTable, admin.modelEmp); // Update employee table
         } else if (e.getSource() == admin.updatePayBtn) {
-            updateReservation(admin.payTable, admin.modelPay); // Update payment table
+            updateTable(admin.payTable, admin.modelPay); // Update payment table
         } else if (e.getSource() == admin.updateInsBtn) {
-            updateReservation(admin.insTable, admin.modelIns); // Update insurance table
+            updateTable(admin.insTable, admin.modelIns); // Update insurance table
         } else if (e.getSource() == admin.updateColBtn) {
-            updateReservation(admin.colTable, admin.modelColl); // Update collection table
+            updateTable(admin.colTable, admin.modelColl); // Update collection table
         } else if (e.getSource() == admin.updateBraBtn) {
-            updateReservation(admin.braTable, admin.modelBranch); // Update branch table
+            updateTable(admin.braTable, admin.modelBranch); // Update branch table
         } else if (e.getSource() == admin.updateHisBtn) {
-            updateReservation(admin.hisTable, admin.modelCarHistory); // Update history table
+            updateTable(admin.hisTable, admin.modelCarHistory); // Update history table
         } else if (e.getSource() == admin.deleteCusbtn) {
             deleteCustomer(admin.customerIdField.getText());
         } else if (e.getSource() == admin.deleteCarBtn) {
@@ -330,7 +330,7 @@ class AdminListner implements ActionListener {
     }
 
 
-    private void updateReservation(JTable updateTable, DefaultTableModel updateModel) {
+    private void updateTable(JTable updateTable, DefaultTableModel updateModel) {
         int row = updateTable.getSelectedRow();
         if (row == -1) {
             JOptionPane.showMessageDialog(null, "Please select a record to update!",
@@ -350,7 +350,7 @@ class AdminListner implements ActionListener {
                     updateCar(primaryKey, updateModel);
                     break;
                 case "Reservation":
-                    updateReservation(primaryKey, updateModel);
+                    updateTable(primaryKey, updateModel);
                     break;
                 case "Payment":
                     updatePayment(primaryKey, updateModel);
@@ -436,7 +436,7 @@ class AdminListner implements ActionListener {
     }
 
     // Reservation Update
-    private void updateReservation(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateTable(String originalId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Reservation SET Reservation_Id=?, Car_Id=?, Customer_Id=?, Emp_Id=?, Reservation_Status=?, Collateral_Id=?, PickUp_Date=?, Dropoff_Date=?, Pickup_Location=?, Dropoff_Location=?, Payment_Id=?, Insurance_Id=? WHERE Reservation_Id=?";
         try (PreparedStatement pstmt = admin.connection.prepareStatement(query)) {
             pstmt.setString(1, admin.reservationIdField.getText());
