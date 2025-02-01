@@ -23,6 +23,7 @@ public class ManagerClass extends CarRentalSystem {
     public ManagerClass() {
         super("Hello World");
         initializeDatabase();
+        setIcon();
         setTitle("Flash Car Rental- Manager");
         setSize(1200, 800);
         listener = new ManagerListner(this);
@@ -84,13 +85,9 @@ public class ManagerClass extends CarRentalSystem {
         inputCustPanel.add(new JLabel("Driver License:"));
         inputCustPanel.add(licenseField);
 
-        modelCust = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelCust = new DefaultTableModel();
         cusTable = new JTable(modelCust);
+        cusTable.setEnabled(false);
 
         cusTable.setName("Customer");
 
@@ -138,13 +135,9 @@ public class ManagerClass extends CarRentalSystem {
         inputCarPanel.add(availableCombo);
 
 
-        modelCar = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelCar =  new DefaultTableModel();
         caTable = new JTable(modelCar);
+        caTable.setEnabled(false);
         caTable.setName("Car");
 
         loadTableData("SELECT * FROM Car", Car_Table(modelCar));
@@ -177,11 +170,10 @@ public class ManagerClass extends CarRentalSystem {
         startDateField = new JTextField();
         endDateField = new JTextField();
         statusCombo = new JComboBox<>(new Integer[]{0, 1, 2});
+        statusCombo.setSelectedIndex(1);
         pickUpLocation = new JTextField();
         dropOffLocation = new JTextField();
-        resPaymentIdField = new JTextField();
         resInsuranceIdField = new JTextField();
-        resCollateralIdField = new JTextField();
 
         inputResPanel.add(new JLabel("Reservation ID (ridXX):"));
         inputResPanel.add(reservationIdField);
@@ -201,20 +193,12 @@ public class ManagerClass extends CarRentalSystem {
         inputResPanel.add(dropOffLocation);
         inputResPanel.add(new JLabel("Status:"));
         inputResPanel.add(statusCombo);
-        inputResPanel.add(new JLabel("Payment ID:"));
-        inputResPanel.add(resPaymentIdField);
         inputResPanel.add(new JLabel("Insurance ID:"));
         inputResPanel.add(resInsuranceIdField);
-        inputResPanel.add(new JLabel("Collateral ID:"));
-        inputResPanel.add(resCollateralIdField);
 
-        modelRes = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelRes =  new DefaultTableModel();
         resTable = new JTable(modelRes);
+        resTable.setEnabled(false);
         resTable.setName("Reservation");
 
         loadTableData("SELECT * FROM Reservation", Reservation_Table(modelRes));
@@ -265,15 +249,9 @@ public class ManagerClass extends CarRentalSystem {
         inputPayPanel.add(new JLabel("Payment Date (YYYY-MM-DD):"));
         inputPayPanel.add(paymentDateField);
 
-        modelPay = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                // Make all cells non-editable
-                return false;
-            }
-        };
-
+        modelPay =  new DefaultTableModel();
         payTable = new JTable(modelPay);
+        payTable.setEnabled(false);
         payTable.setName("Payment");
 
         loadTableData("SELECT * FROM Payment", Payment_Table(modelPay));
@@ -296,14 +274,9 @@ public class ManagerClass extends CarRentalSystem {
         JPanel panel = new JPanel(new BorderLayout());
 
         // Create a custom DefaultTableModel that makes the table non-editable
-        modelEmp = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
+        modelEmp =  new DefaultTableModel();
         empTable = new JTable(modelEmp);
+        empTable.setEnabled(false);
         empTable.setName("Employee");
 
         loadTableData("SELECT * FROM Employee", Employee_Table(modelEmp));
@@ -335,13 +308,9 @@ public class ManagerClass extends CarRentalSystem {
         inputInsPanel.add(new JLabel("Expire Date (YYYY-MM-DD):"));
         inputInsPanel.add(expireDateField);
 
-        modelIns = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelIns =  new DefaultTableModel();
         insTable = new JTable(modelIns);
+        insTable.setEnabled(false);
         insTable.setName("Insurance");
 
         loadTableData("SELECT * FROM Insurance", Insurance_Table(modelIns));
@@ -391,13 +360,9 @@ public class ManagerClass extends CarRentalSystem {
         inputCollPanel.add(new JLabel("Recive Date (YYYY-MM-DD):"));
         inputCollPanel.add(reciveDateField);
 
-        modelColl = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelColl =  new DefaultTableModel();
         colTable = new JTable(modelColl);
+        colTable.setEnabled(false);
         colTable.setName("Collateral");
 
         loadTableData("SELECT * FROM Collateral", Collateral_Table(modelColl));
@@ -437,13 +402,9 @@ public class ManagerClass extends CarRentalSystem {
         inputBranchPanel.add(new JLabel("Woreda:"));
         inputBranchPanel.add(bWoredaField);
 
-        modelBranch = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        modelBranch =  new DefaultTableModel();
         braTable = new JTable(modelBranch);
+        braTable.setEnabled(false);
         braTable.setName("Rental Branch");
 
         loadTableData("SELECT * FROM Rental_Branch", Rental_Branch(modelBranch));
@@ -484,16 +445,9 @@ public class ManagerClass extends CarRentalSystem {
         inputHistoryPanel.add(new JLabel("Record Type (Service/Damage/Maintenance/Other):"));
         inputHistoryPanel.add(recordTypeField);
 
-        modelCarHistory = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                // Make all cells non-editable
-                return false;
-            }
-        };
-
-        empTable = new JTable(modelEmp);
+        modelCarHistory =  new DefaultTableModel();
         hisTable = new JTable(modelCarHistory);
+        hisTable.setEnabled(false);
         hisTable.setName("Car History");
 
         loadTableData("SELECT * FROM Car_History", Car_History(modelCarHistory));
@@ -511,6 +465,7 @@ public class ManagerClass extends CarRentalSystem {
         return panel;
     }
 
+    //Search-Panel
     public static JPanel createManagerSearchPanel(Connection dbConnection) {
         JPanel resultPanel = new JPanel(new BorderLayout());
 
@@ -521,7 +476,8 @@ public class ManagerClass extends CarRentalSystem {
 
         // Create the search button
         JButton searchButton = new JButton("Search");
-        searchButton.addActionListener(new DemoTrail.ManagerClass.SearchButtonListener(dbConnection, searchComboBox, resultPanel));
+        searchButton.setFocusable(false);
+        searchButton.addActionListener(new SearchButtonListener(dbConnection, searchComboBox, resultPanel));
 
         // Create the result table
         DefaultTableModel tableModel = new DefaultTableModel();
@@ -532,9 +488,15 @@ public class ManagerClass extends CarRentalSystem {
 
 
         JButton clearButton = new JButton("Clear");
+        clearButton.setFocusable(false);
 
-        clearButton.addActionListener(e -> {
-            scrollPane.setVisible(false);
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tableModel.setRowCount(0);
+                tableModel.setColumnCount(0);
+            }
+
         });
 
         JPanel topPanel = new JPanel();
@@ -634,7 +596,7 @@ public class ManagerClass extends CarRentalSystem {
 
                     while (resultSet.next()) {
                         Object[] row = new Object[columnCount];
-                        for (int i = 1; i <= columnCount; i++) {
+                        for (int i = 1; i <= row.length; i++) {
                             row[i - 1] = resultSet.getObject(i);
                         }
                         tableModel.addRow(row);
