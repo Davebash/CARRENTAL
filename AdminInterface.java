@@ -186,11 +186,10 @@ public class AdminInterface  extends CarRentalSystem {
         startDateField = new JTextField();
         endDateField = new JTextField();
         statusCombo = new JComboBox<>(new Integer[]{0, 1, 2});
+        statusCombo.setSelectedIndex(1);
         pickUpLocation = new JTextField();
         dropOffLocation = new JTextField();
-        resPaymentIdField = new JTextField();
         resInsuranceIdField = new JTextField();
-        resCollateralIdField = new JTextField();
 
         inputResPanel.add(new JLabel("Reservation ID (ridXX):"));
         inputResPanel.add(reservationIdField);
@@ -210,12 +209,8 @@ public class AdminInterface  extends CarRentalSystem {
         inputResPanel.add(dropOffLocation);
         inputResPanel.add(new JLabel("Status:"));
         inputResPanel.add(statusCombo);
-        inputResPanel.add(new JLabel("Payment ID:"));
-        inputResPanel.add(resPaymentIdField);
         inputResPanel.add(new JLabel("Insurance ID:"));
         inputResPanel.add(resInsuranceIdField);
-        inputResPanel.add(new JLabel("Collateral ID:"));
-        inputResPanel.add(resCollateralIdField);
 
         modelRes =  new DefaultTableModel();
         resTable = new JTable(modelRes);
