@@ -1,9 +1,9 @@
 package DemoTrail;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -29,34 +29,37 @@ class AdminListner implements ActionListener {
             insertReservation(); // Call the method for inserting a reservation
         } else if (e.getSource() == admin.addBtnPay) {
             insertPayment(); // Call the method for inserting a payment
+
         } else if (e.getSource() == admin.addBtnEmp) {
             insertEmployee(); // Call the method for inserting an employee
         } else if (e.getSource() == admin.addBtnIns) {
             insertInsurance(); // Call the method for inserting insurance
-        } else if (e.getSource() == admin.addBtnColl) {
+        }
+        else if (e.getSource() == admin.addBtnColl) {
             insertCollateral(); // Call the method for inserting collateral
-        }else if (e.getSource() == admin.addBtnBranch) {
+        }
+        else if (e.getSource() == admin.addBtnBranch) {
             insertRentalBranch(); // Call the method for inserting collateral
         } else if (e.getSource() == admin.addBtnHistory) {
             insertCarHis();
         } else if (e.getSource() == admin.updateCusBtn) {
-            updateTable(admin.cusTable, admin.modelCust); // Update customer table
+            updateReservation(admin.cusTable, admin.modelCust); // Update customer table
         } else if (e.getSource() == admin.updateCarBtn) {
-            updateTable(admin.caTable, admin.modelCar); // Update car table
+            updateReservation(admin.caTable, admin.modelCar); // Update car table
         } else if (e.getSource() == admin.updateResBtn) {
-            updateTable(admin.resTable, admin.modelRes); // Update reservation table
+            updateReservation(admin.resTable, admin.modelRes); // Update reservation table
         } else if (e.getSource() == admin.updateEmpBtn) {
-            updateTable(admin.empTable, admin.modelEmp); // Update employee table
+            updateReservation(admin.empTable, admin.modelEmp); // Update employee table
         } else if (e.getSource() == admin.updatePayBtn) {
-            updateTable(admin.payTable, admin.modelPay); // Update payment table
+            updateReservation(admin.payTable, admin.modelPay); // Update payment table
         } else if (e.getSource() == admin.updateInsBtn) {
-            updateTable(admin.insTable, admin.modelIns); // Update insurance table
+            updateReservation(admin.insTable, admin.modelIns); // Update insurance table
         } else if (e.getSource() == admin.updateColBtn) {
-            updateTable(admin.colTable, admin.modelColl); // Update collection table
+            updateReservation(admin.colTable, admin.modelColl); // Update collection table
         } else if (e.getSource() == admin.updateBraBtn) {
-            updateTable(admin.braTable, admin.modelBranch); // Update branch table
+            updateReservation(admin.braTable, admin.modelBranch); // Update branch table
         } else if (e.getSource() == admin.updateHisBtn) {
-            updateTable(admin.hisTable, admin.modelCarHistory); // Update history table
+            updateReservation(admin.hisTable, admin.modelCarHistory); // Update history table
         } else if (e.getSource() == admin.deleteCusbtn) {
             deleteCustomer(admin.customerIdField.getText());
         } else if (e.getSource() == admin.deleteCarBtn) {
@@ -144,12 +147,12 @@ class AdminListner implements ActionListener {
             pstmt.setString(3, admin.resCustomerIdField.getText());
             pstmt.setString(4, admin.resEmpIdField.getText());
             pstmt.setString(5, admin.statusCombo.getSelectedItem().toString());
-            pstmt.setString(6, admin.resCollateralIdField.getText());
+            pstmt.setString(6, null);
             pstmt.setString(7, admin.startDateField.getText());
             pstmt.setString(8, admin.endDateField.getText());
             pstmt.setString(9, admin.pickUpLocation.getText());
             pstmt.setString(10, admin.dropOffLocation.getText());
-            pstmt.setString(11, admin.resPaymentIdField.getText());
+            pstmt.setString(11, null);
             pstmt.setString(12, admin.resInsuranceIdField.getText());
 
             pstmt.executeUpdate();
@@ -166,8 +169,9 @@ class AdminListner implements ActionListener {
     private void insertPayment() {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
                 "INSERT INTO Payment VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+
             pstmt.setString(1, admin.paymentIdField.getText());
-            pstmt.setString(2, admin.payReservationIdField.getText());
+            pstmt.setString(2, admin.payReservationIdField.getText()); // Link to Reservation
             pstmt.setString(3, admin.amountField.getText());
             pstmt.setString(4, admin.noCarField.getText());
             pstmt.setString(5, admin.payTypeCombo.getSelectedItem().toString());
@@ -175,13 +179,23 @@ class AdminListner implements ActionListener {
             pstmt.setString(7, admin.methodCombo.getSelectedItem().toString());
             pstmt.setString(8, admin.paymentDateField.getText());
             pstmt.executeUpdate();
+
+            // Call the stored procedure to update Reservation with Payment_Id
+            try (CallableStatement stmt = admin.connection.prepareCall("{CALL Update_Payment}")) {
+                stmt.execute();
+            }
+
+            // Refresh table and clear fields
             admin.loadTableData("SELECT * FROM Payment", admin.modelPay);
+            admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
             admin.clearFields(admin.inputPayPanel);
             JOptionPane.showMessageDialog(null, "Payment added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException ex) {
             admin.showError("Payment Add Error", ex);
         }
     }
+
 
 
     // Employee Insertion
@@ -243,6 +257,7 @@ class AdminListner implements ActionListener {
     private void insertCollateral() {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
                 "INSERT INTO Collateral VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+
             pstmt.setString(1, admin.collateralIdField.getText());
             pstmt.setString(2, admin.collCustomerIdField.getText());
             pstmt.setString(3, admin.collCarIdField.getText());
@@ -251,13 +266,23 @@ class AdminListner implements ActionListener {
             pstmt.setString(6, admin.collamountField.getText());
             pstmt.setString(7, admin.reciveDateField.getText());
             pstmt.executeUpdate();
+
+            // Call the stored procedure to update Reservation with Collateral_Id
+            try (CallableStatement stmt = admin.connection.prepareCall("{CALL Update_Collateral}")) {
+                stmt.execute();
+            }
+
+            // Refresh table and clear fields
             admin.loadTableData("SELECT * FROM Collateral", admin.modelColl);
+            admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
             admin.clearFields(admin.inputCollPanel);
             JOptionPane.showMessageDialog(null, "Collateral added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException ex) {
             admin.showError("Collateral Add Error", ex);
         }
     }
+
 
     private void insertRentalBranch() {
         try (PreparedStatement pstmt = admin.connection.prepareStatement(
@@ -305,7 +330,7 @@ class AdminListner implements ActionListener {
     }
 
 
-    private void updateTable(JTable updateTable, DefaultTableModel updateModel) {
+    private void updateReservation(JTable updateTable, DefaultTableModel updateModel) {
         int row = updateTable.getSelectedRow();
         if (row == -1) {
             JOptionPane.showMessageDialog(null, "Please select a record to update!",
@@ -625,9 +650,6 @@ class AdminListner implements ActionListener {
 
     private void deleteRecord(String tableName, String primaryKeyColumn, String primaryKeyValue) {
         String query = "DELETE FROM " + tableName + " WHERE " + primaryKeyColumn + " = ?";
-        DefaultTableModel mod;
-//        admin.tableName.getModel();
-//        admin.cusTable.getModel()
         try (PreparedStatement pstmt = admin.connection.prepareStatement(query)) {
             pstmt.setString(1, primaryKeyValue); // Set the primary key value
             int rowsDeleted = pstmt.executeUpdate();
