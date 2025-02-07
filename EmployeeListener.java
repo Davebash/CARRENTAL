@@ -15,22 +15,22 @@ class EmployeeListener implements ActionListener {
 
     public EmployeeListener(EmployeeClass emp) {
         this.emp = emp;
-        System.out.println("Listner is being assigned");
+        System.out.println("Listener is being assigned");
     }
 
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == emp.updateCusBtn) {
-            updateTable(emp.cusTable, emp.modelCust); // Update customer table
+            updateTable("Customer", emp.modelCust); // Update customer table
         } else if (e.getSource() == emp.updateCarBtn) {
-            updateTable(emp.caTable, emp.modelCar); // Update car table
+            updateTable("Car", emp.modelCar); // Update car table
         } else if (e.getSource() == emp.updateResBtn) {
-            updateTable(emp.resTable, emp.modelRes); // Update reservation table
+            updateTable("Reservation", emp.modelRes); // Update reservation table
         } else if (e.getSource() == emp.updateColBtn) {
-            updateTable(emp.colTable, emp.modelColl); // Update collateral table
+            updateTable("Collateral", emp.modelColl); // Update collateral table
         } else if (e.getSource() == emp.updateBraBtn) {
-            updateTable(emp.braTable, emp.modelBranch); // Update branch table
+            updateTable("Rental Branch", emp.modelBranch); // Update branch table
         } else if (e.getSource() == emp.addBtnCust) {
             insertCustomer(); // Call the method for inserting a customer
         } else if (e.getSource() == emp.addBtnRes) {
@@ -177,34 +177,29 @@ class EmployeeListener implements ActionListener {
         }
     }
 
-
-    private void updateTable(JTable updateTable, DefaultTableModel updateModel) {
-        int row = updateTable.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(null, "Please select a record to update!",
-                    "No Selection", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        String tableName = updateTable.getName();
-        String primaryKey = updateModel.getValueAt(row, 0).toString();
-
+    private void updateTable(String tableName, DefaultTableModel model) {
         try {
+            String primaryKey = getPrimaryKeyValue(tableName); // Get the primary key value from the corresponding field
+            if (primaryKey == null || primaryKey.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Please enter the ID of the record to update!", "Missing ID", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             switch (tableName) {
                 case "Customer":
-                    updateCustomer(primaryKey, updateModel);
+                    updateCustomer(primaryKey, model);
                     break;
                 case "Car":
-                    updateCar(primaryKey, updateModel);
+                    updateCar(primaryKey, model);
                     break;
                 case "Reservation":
-                    updateReservation(primaryKey, updateModel);
+                    updateReservation(primaryKey, model);
                     break;
                 case "Collateral":
-                    updateCollateral(primaryKey, updateModel);
+                    updateCollateral(primaryKey, model);
                     break;
                 case "Rental Branch":
-                    updateRentalBranch(primaryKey, updateModel);
+                    updateRentalBranch(primaryKey, model);
                     break;
                 default:
                     System.out.println("Unknown table: " + tableName);
@@ -215,8 +210,31 @@ class EmployeeListener implements ActionListener {
         }
     }
 
+    private String getPrimaryKeyValue(String tableName) {
+        switch (tableName) {
+            case "Customer":
+                return emp.customerIdField.getText();
+            case "Car":
+                return emp.carIdField.getText();
+            case "Reservation":
+                return emp.reservationIdField.getText();
+            case "Payment":
+                return emp.paymentIdField.getText();
+            case "Insurance":
+                return emp.insuranceIdField.getText();
+            case "Collateral":
+                return emp.collateralIdField.getText();
+            case "Rental Branch":
+                return emp.branchIdField.getText();
+            case "Car History":
+                return emp.historyIdField.getText();
+            default:
+                return null;
+        }
+    }
+
     //Updating the Customer Table
-    private void updateCustomer(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateCustomer(String customerId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Customer SET Customer_Id=?, C_FName=?, C_LName=?, C_Phone_No=?, C_Email=?, C_Region=?, C_Zone=?, C_House_No=?, C_Drivers_LN=? WHERE Customer_Id=?";
         try (PreparedStatement pstmt = emp.connection.prepareStatement(query)) {
             pstmt.setString(1, emp.customerIdField.getText());
@@ -228,51 +246,41 @@ class EmployeeListener implements ActionListener {
             pstmt.setString(7, emp.zoneField.getText());
             pstmt.setString(8, emp.houseNoField.getText());
             pstmt.setString(9, emp.licenseField.getText());
-            pstmt.setString(10, originalId);
-            pstmt.executeUpdate();
-            emp.loadTableData("SELECT * FROM Customer", model);
+            pstmt.setString(10, customerId); // Use the provided customer ID
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                emp.loadTableData("SELECT * FROM Customer", model);
+            } else {
+                JOptionPane.showMessageDialog(null, "No customer found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (SQLException ex) {
-            // Show SQL error
             emp.showError("Update Failed", ex);
-        } catch (Exception ex) { // Catch all other exceptions
-            JOptionPane.showMessageDialog(
-                    emp,
-                    "Unexpected error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            ex.printStackTrace(); // Log for debugging
         }
     }
 
     // Car Update
-    private void updateCar(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateCar(String carId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Car SET Car_Id=?, Branch_Id=?, Model=?, Plate_No=?, IsAvailable=? WHERE Car_Id=?";
         try (PreparedStatement pstmt = emp.connection.prepareStatement(query)) {
             pstmt.setString(1, emp.carIdField.getText());
-            pstmt.setString(2, emp.branchIdField.getText());
+            pstmt.setString(2, emp.carBranchIdField.getText());
             pstmt.setString(3, emp.modelField.getText());
             pstmt.setString(4, emp.plateField.getText());
             pstmt.setString(5, emp.availableCombo.getSelectedItem().toString());
-            pstmt.setString(6, originalId);
-            pstmt.executeUpdate();
-            emp.loadTableData("SELECT * FROM Car", model);
+            pstmt.setString(6, carId); // Use the provided car ID
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                emp.loadTableData("SELECT * FROM Car", model);
+            } else {
+                JOptionPane.showMessageDialog(null, "No car found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (SQLException ex) {
-            // Show SQL error
-            emp.showError("Update Failed", ex);
-        } catch (Exception ex) { // Catch all other exceptions
-            JOptionPane.showMessageDialog(
-                    emp,
-                    "Unexpected error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            ex.printStackTrace(); // Log for debugging
+            emp.showError("Car Update Failed", ex);
         }
     }
 
     // Reservation Update
-    private void updateReservation(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateReservation(String reservationId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Reservation SET Reservation_Id=?, Car_Id=?, Customer_Id=?, Emp_Id=?, Reservation_Status=?, Collateral_Id=?, PickUp_Date=?, Dropoff_Date=?, Pickup_Location=?, Dropoff_Location=?, Payment_Id=?, Insurance_Id=? WHERE Reservation_Id=?";
         try (PreparedStatement pstmt = emp.connection.prepareStatement(query)) {
             pstmt.setString(1, emp.reservationIdField.getText());
@@ -287,25 +295,20 @@ class EmployeeListener implements ActionListener {
             pstmt.setString(10, emp.dropOffLocation.getText());
             pstmt.setString(11, emp.resPaymentIdField.getText());
             pstmt.setString(12, emp.resInsuranceIdField.getText());
-            pstmt.setString(13, originalId);
-            pstmt.executeUpdate();
-            emp.loadTableData("SELECT * FROM Reservation", model);
+            pstmt.setString(13, reservationId); // Use the provided reservation ID
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                emp.loadTableData("SELECT * FROM Reservation", model);
+            } else {
+                JOptionPane.showMessageDialog(null, "No reservation found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (SQLException ex) {
-            // Show SQL error
-            emp.showError("Update Failed", ex);
-        } catch (Exception ex) { // Catch all other exceptions
-            JOptionPane.showMessageDialog(
-                    emp,
-                    "Unexpected error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            ex.printStackTrace(); // Log for debugging
+            emp.showError("Reservation Update Failed", ex);
         }
     }
 
     // Collateral Update
-    private void updateCollateral(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateCollateral(String collateralId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Collateral SET Collateral_Id=?, Customer_Id=?, Car_Id=?, Reservation_Id=?, Collateral_Type=?, Amount=?, Date_Received=? WHERE Collateral_Id=?";
         try (PreparedStatement pstmt = emp.connection.prepareStatement(query)) {
             pstmt.setString(1, emp.collateralIdField.getText());
@@ -315,43 +318,34 @@ class EmployeeListener implements ActionListener {
             pstmt.setString(5, emp.collTypeField.getText());
             pstmt.setString(6, emp.collamountField.getText());
             pstmt.setString(7, emp.reciveDateField.getText());
-            pstmt.setString(8, originalId);
-            pstmt.executeUpdate();
-            emp.loadTableData("SELECT * FROM Collateral", model);
+            pstmt.setString(8, collateralId); // Use the provided collateral ID
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                emp.loadTableData("SELECT * FROM Collateral", model);
+            } else {
+                JOptionPane.showMessageDialog(null, "No collateral found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (SQLException ex) {
-            // Show SQL error
-            emp.showError("Update Failed", ex);
-        } catch (Exception ex) { // Catch all other exceptions
-            JOptionPane.showMessageDialog(
-                    emp,
-                    "Unexpected error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            ex.printStackTrace(); // Log for debugging
+            emp.showError("Collateral Update Failed", ex);
         }
     }
 
-    private void updateRentalBranch(String originalId, DefaultTableModel model) throws SQLException {
+    private void updateRentalBranch(String branchId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Rental_Branch SET Branch_id=?, B_Region=?, B_Zone=?, B_Woreda=? WHERE Branch_id=?";
         try (PreparedStatement pstmt = emp.connection.prepareStatement(query)) {
-            // Set parameters from input fields
             pstmt.setString(1, emp.branchIdField.getText());
             pstmt.setString(2, emp.bRegionField.getText());
             pstmt.setString(3, emp.bZoneField.getText());
-            pstmt.setInt(4, Integer.parseInt(emp.bWoredaField.getText())); // Handle number conversion
-            pstmt.setString(5, originalId);
-
-            pstmt.executeUpdate();
-            emp.loadTableData("SELECT * FROM Rental_Branch", model);
+            pstmt.setInt(4, Integer.parseInt(emp.bWoredaField.getText()));
+            pstmt.setString(5, branchId); // Use the provided branch ID
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                emp.loadTableData("SELECT * FROM Rental_Branch", model);
+            } else {
+                JOptionPane.showMessageDialog(null, "No branch found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (SQLException ex) {
             emp.showError("Branch Update Failed", ex);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(emp,
-                    "Unexpected error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
         }
     }
 
