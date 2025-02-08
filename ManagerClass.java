@@ -231,7 +231,7 @@ public class ManagerClass extends CarRentalSystem {
         noCarField = new JTextField();
         payTypeCombo = new JComboBox<>(new String[]{"Partial", "Full"});
         totalPriceField = new JTextField();
-        methodCombo = new JComboBox<>(new String[]{"Cash", "Credit Card", "Debit Card", "Online"});
+        methodCombo = new JComboBox<>(new String[]{"Cash", "Card", "Other"});
         paymentDateField = new JTextField();
 
         inputPayPanel.add(new JLabel("Payment ID (pidXX):"));
