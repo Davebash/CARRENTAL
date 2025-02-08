@@ -250,6 +250,7 @@ class EmployeeListener implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 emp.loadTableData("SELECT * FROM Customer", model);
+                emp.clearFields(emp.inputCustPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No customer found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -271,6 +272,7 @@ class EmployeeListener implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 emp.loadTableData("SELECT * FROM Car", model);
+                emp.clearFields(emp.inputCarPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No car found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -288,17 +290,18 @@ class EmployeeListener implements ActionListener {
             pstmt.setString(3, emp.resCustomerIdField.getText());
             pstmt.setString(4, emp.resEmpIdField.getText());
             pstmt.setString(5, emp.statusCombo.getSelectedItem().toString());
-            pstmt.setString(6, emp.resCollateralIdField.getText());
+            pstmt.setString(6, null);
             pstmt.setString(7, emp.startDateField.getText());
             pstmt.setString(8, emp.endDateField.getText());
             pstmt.setString(9, emp.pickUpLocation.getText());
             pstmt.setString(10, emp.dropOffLocation.getText());
-            pstmt.setString(11, emp.resPaymentIdField.getText());
+            pstmt.setString(11, null);
             pstmt.setString(12, emp.resInsuranceIdField.getText());
             pstmt.setString(13, reservationId); // Use the provided reservation ID
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 emp.loadTableData("SELECT * FROM Reservation", model);
+                emp.clearFields(emp.inputResPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No reservation found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -318,10 +321,18 @@ class EmployeeListener implements ActionListener {
             pstmt.setString(5, emp.collTypeField.getText());
             pstmt.setString(6, emp.collamountField.getText());
             pstmt.setString(7, emp.reciveDateField.getText());
-            pstmt.setString(8, collateralId); // Use the provided collateral ID
+            pstmt.setString(8, collateralId);
+
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
+                // Call the stored procedure to update related records in Reservation
+                try (CallableStatement stmt = emp.connection.prepareCall("{CALL Update_Collateral}")) {
+                    stmt.execute();
+                }
+
                 emp.loadTableData("SELECT * FROM Collateral", model);
+                emp.loadTableData("SELECT * FROM Reservation", emp.modelRes);
+                emp.clearFields(emp.inputCollPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No collateral found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -329,6 +340,7 @@ class EmployeeListener implements ActionListener {
             emp.showError("Collateral Update Failed", ex);
         }
     }
+
 
     private void updateRentalBranch(String branchId, DefaultTableModel model) throws SQLException {
         String query = "UPDATE Rental_Branch SET Branch_id=?, B_Region=?, B_Zone=?, B_Woreda=? WHERE Branch_id=?";
@@ -341,6 +353,7 @@ class EmployeeListener implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 emp.loadTableData("SELECT * FROM Rental_Branch", model);
+                emp.clearFields(emp.inputBranchPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No branch found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
