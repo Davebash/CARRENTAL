@@ -415,6 +415,7 @@ class AdminListner implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Customer", model);
+                admin.clearFields(admin.inputCustPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No customer found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -436,6 +437,7 @@ class AdminListner implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Car", model);
+                admin.clearFields(admin.inputCarPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No car found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -453,17 +455,18 @@ class AdminListner implements ActionListener {
             pstmt.setString(3, admin.resCustomerIdField.getText());
             pstmt.setString(4, admin.resEmpIdField.getText());
             pstmt.setString(5, admin.statusCombo.getSelectedItem().toString());
-            pstmt.setString(6, admin.resCollateralIdField.getText());
+            pstmt.setString(6, null);
             pstmt.setString(7, admin.startDateField.getText());
             pstmt.setString(8, admin.endDateField.getText());
             pstmt.setString(9, admin.pickUpLocation.getText());
             pstmt.setString(10, admin.dropOffLocation.getText());
-            pstmt.setString(11, admin.resPaymentIdField.getText());
+            pstmt.setString(11, null);
             pstmt.setString(12, admin.resInsuranceIdField.getText());
             pstmt.setString(13, reservationId); // Use the provided reservation ID
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Reservation", model);
+                admin.clearFields(admin.inputResPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No reservation found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -484,10 +487,18 @@ class AdminListner implements ActionListener {
             pstmt.setString(6, admin.totalPriceField.getText());
             pstmt.setString(7, admin.methodCombo.getSelectedItem().toString());
             pstmt.setString(8, admin.paymentDateField.getText());
-            pstmt.setString(9, paymentId); // Use the provided payment ID
+            pstmt.setString(9, paymentId);
+
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
+                // Call the stored procedure to update related records in Reservation
+                try (CallableStatement stmt = admin.connection.prepareCall("{CALL Update_Payment}")) {
+                    stmt.execute();
+                }
+
                 admin.loadTableData("SELECT * FROM Payment", model);
+                admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
+                admin.clearFields(admin.inputPayPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No payment found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -515,6 +526,7 @@ class AdminListner implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Employee", model);
+                admin.clearFields(admin.inputEmpPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No employee found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -536,6 +548,7 @@ class AdminListner implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Insurance", model);
+                admin.clearFields(admin.inputInsPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No insurance found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -555,10 +568,18 @@ class AdminListner implements ActionListener {
             pstmt.setString(5, admin.collTypeField.getText());
             pstmt.setString(6, admin.collamountField.getText());
             pstmt.setString(7, admin.reciveDateField.getText());
-            pstmt.setString(8, collateralId); // Use the provided collateral ID
+            pstmt.setString(8, collateralId);
+
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
+                // Call the stored procedure to update related records in Reservation
+                try (CallableStatement stmt = admin.connection.prepareCall("{CALL Update_Collateral}")) {
+                    stmt.execute();
+                }
+
                 admin.loadTableData("SELECT * FROM Collateral", model);
+                admin.loadTableData("SELECT * FROM Reservation", admin.modelRes);
+                admin.clearFields(admin.inputCollPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No collateral found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -580,6 +601,7 @@ class AdminListner implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Rental_Branch", model);
+                admin.clearFields(admin.inputBranchPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No branch found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -600,6 +622,7 @@ class AdminListner implements ActionListener {
             int rowsUpdated = pstmt.executeUpdate();
             if (rowsUpdated > 0) {
                 admin.loadTableData("SELECT * FROM Car_History", model);
+                admin.clearFields(admin.inputHistoryPanel);
             } else {
                 JOptionPane.showMessageDialog(null, "No history found with the given ID!", "Error", JOptionPane.ERROR_MESSAGE);
             }
